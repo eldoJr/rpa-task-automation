@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ui/button/Button";
 import { Menu } from "lucide-react";
 import { Link } from "react-scroll";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/icons/logo.svg";
 
 const Navbar = () => {
   const [scrolling, setScrolling] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,10 +45,9 @@ const Navbar = () => {
       >
         <div className="container mx-auto flex justify-between items-center py-4 px-8 lg:px-12">
           <a href="#" className="text-xl font-bold text-black">
-            <img src={logo} alt="AutomateRFP logo" width="80" height="40" />{" "}
+            <img src={logo} alt="logo" width="50" height="40" />{" "}
           </a>
 
-          {/* Desktop Navigation */}
           <ul className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
               <li key={link.id}>
@@ -63,15 +64,22 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {/* Desktop Buttons */}
           <div className="hidden md:flex space-x-4">
-            <Button variant="outline" className="text-sm">
+            <Button
+              variant="outline"
+              className="text-sm"
+              onClick={() => navigate("/login")}
+            >
               Login
             </Button>
-            <Button className="text-sm">Get Started</Button>
+            <Button
+              className="text-sm"
+              onClick={() => navigate("/register")} 
+            >
+              Get Started
+            </Button>
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
             className="md:hidden p-2 focus:outline-none"
             onClick={toggleMobileMenu}
@@ -100,10 +108,25 @@ const Navbar = () => {
               ))}
             </ul>
             <div className="flex flex-col space-y-4 p-6">
-              <Button variant="outline" className="w-full text-sm">
+              <Button
+                variant="outline"
+                className="w-full text-sm"
+                onClick={() => {
+                  navigate("/login");
+                  closeMobileMenu();
+                }}
+              >
                 Login
               </Button>
-              <Button className="w-full text-sm">Get Started</Button>
+              <Button
+                className="w-full text-sm"
+                onClick={() => {
+                  navigate("/register");
+                  closeMobileMenu();
+                }}
+              >
+                Get Started
+              </Button>
             </div>
           </div>
         )}

@@ -1,24 +1,19 @@
-import Navbar from "./components/layout/navbar/navbar";
-import Header from "./components/layout/header/Header";
-import About from "./pages/About";
-import Integrations from "./pages/Integrations";
-import FeaturesAutomation from "./pages/Features";
-import Results from "./pages/Results";
-import UseCases from "./pages/UseCases";
-import Footer from "./components/layout/footer/Footer";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Register from "@/pages/Register";
+import Login from "./pages/Login";
+import Home from "@/pages/Home";
 
 function App() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <Header />
-      <About />
-      <Integrations />
-      <FeaturesAutomation />
-      <Results />
-      <UseCases />      
-      <Footer />
-    </div>
+    <Router>
+      <div className="min-h-screen bg-white">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

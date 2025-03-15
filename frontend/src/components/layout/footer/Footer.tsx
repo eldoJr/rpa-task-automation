@@ -8,7 +8,7 @@ export default function Footer() {
         {/* Brand & Tagline */}
         <div className="flex flex-col items-center md:items-start">
         <a href="#" className="text-xl font-bold text-black">
-            <img src={logo} alt="AutomateRFP logo" width="80" height="40" />{" "}
+            <img src={logo} alt="AutomateRFP logo" width="100" height="40" />{" "}
           </a>
           <p className="text-gray-600 mt-2 text-center md:text-left">
             Automate repetitive tasks & create RFPs in minutes.
