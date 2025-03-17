@@ -1,4 +1,4 @@
-import Navbar from "@/components/layout/navbar/navbar";
+/* import Navbar from "@/components/layout/navbar/navbar";
 import Header from "@/components/layout/header/Header";
 import About from "@/components/layout/about/About";
 import Integrations from "@/components/layout/integrations/Integrations";
@@ -18,6 +18,19 @@ function App() {
       <Results />
       <UseCases />      
       <Footer />
+    </div>
+  );
+}
+
+export default App;
+*/
+
+import Dashboard from "./Dashboard/dashboard";
+
+function App() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Dashboard />
     </div>
   );
 }

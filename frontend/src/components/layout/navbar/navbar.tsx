@@ -21,7 +21,7 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    // Bloquear rolagem quando o menu mobile estiver aberto
+    // Lock scrolling when mobile menu is open
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -39,7 +39,7 @@ const Navbar = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-    setActiveDropdown(null); // Fechar dropdowns ao fechar o menu móvel
+    setActiveDropdown(null); // Close dropdowns when closing mobile menu
   };
 
   const toggleDropdown = (id: string) => {

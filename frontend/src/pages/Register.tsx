@@ -3,7 +3,7 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/ui/inputs/input";
 import logo from "@/assets/icons/logo.svg";
 import { FcGoogle } from "react-icons/fc";
-import { FaArrowLeft, FaTwitter, FaFacebook } from "react-icons/fa";
+import { FaArrowLeft, FaTwitter, FaGithub } from "react-icons/fa";
 
 function Register() {
   return (
@@ -114,7 +114,7 @@ function Register() {
               variant="outline"
               className="flex items-center gap-2 border-gray-300 hover:bg-gray-50 w-full justify-center py-2.5"
             >
-              <FaFacebook className="text-blue-600 w-5 h-5" /> Facebook
+              <FaGithub className="text-black w-5 h-5" /> GitHub
             </Button>
           </div>
         </div>
