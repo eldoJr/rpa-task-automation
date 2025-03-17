@@ -5,7 +5,6 @@ export default function Footer() {
   return (
     <footer className="bg-white text-gray-800 py-16 px-8 border-t">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
-        {/* Brand & Tagline */}
         <div className="flex flex-col items-center md:items-start">
         <a href="#" className="text-xl font-bold text-black">
             <img src={logo} alt="AutomateRFP logo" width="100" height="40" />{" "}
@@ -32,7 +31,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Useful Links */}
         <div className="flex flex-col text-center md:text-left">
           <h3 className="text-lg font-semibold mb-4">Company</h3>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors mb-2">About Us</a>
@@ -42,7 +40,6 @@ export default function Footer() {
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">Partners</a>
         </div>
 
-        {/* Resources */}
         <div className="flex flex-col text-center md:text-left">
           <h3 className="text-lg font-semibold mb-4">Resources</h3>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors mb-2">Case Studies</a>
@@ -52,7 +49,6 @@ export default function Footer() {
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">Blog</a>
         </div>
 
-        {/* Legal */}
         <div className="flex flex-col text-center md:text-left">
           <h3 className="text-lg font-semibold mb-4">Legal</h3>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors mb-2">Privacy Policy</a>
@@ -61,7 +57,6 @@ export default function Footer() {
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">GDPR Compliance</a>
         </div>
 
-        {/* Newsletter */}
         <div className="flex flex-col text-center md:text-left">
           <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
           <p className="text-gray-600 mb-4">
@@ -83,9 +78,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Copyright & Additional Links */}
       <div className="text-center text-gray-500 text-sm mt-12 border-t pt-8">
-        <p>&copy; 2025 AutomateRFP. All rights reserved.</p>
+        <p>&copy; 2025 AutoRPA. All rights reserved.</p>
         <div className="flex justify-center space-x-4 mt-2">
           <a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a>
           <span>|</span>

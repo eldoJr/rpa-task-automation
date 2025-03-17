@@ -55,7 +55,6 @@ const About = () => {
           ))}
         </div>
 
-        {/* Botão */}
         <Button
           className="mt-12 px-8 py-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition-colors duration-300 animate-fade-in-up delay-300"
         >

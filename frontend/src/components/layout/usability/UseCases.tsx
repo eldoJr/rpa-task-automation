@@ -10,7 +10,6 @@ const UseCases = () => {
   return (
     <section className="bg-[#f3f3f6] py-12 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8 text-black">
-        {/* Popular Features */}
         <div>
           <h3 className="font-semibold text-base mb-4">Popular Features</h3>
           <ul className="space-y-2 text-sm">
@@ -36,7 +35,6 @@ const UseCases = () => {
           </ul>
         </div>
 
-        {/* Trending Use Cases */}
         <div>
           <h3 className="font-semibold text-base mb-4">Trending Use Cases</h3>
           <ul className="space-y-2 text-sm">
@@ -62,7 +60,6 @@ const UseCases = () => {
           </ul>
         </div>
 
-        {/* Top Categories */}
         <div>
           <h3 className="font-semibold text-base mb-4">Top Categories</h3>
           <ul className="space-y-2 text-sm">
@@ -88,7 +85,6 @@ const UseCases = () => {
           </ul>
         </div>
 
-        {/* Trending Templates */}
         <div>
           <h3 className="font-semibold text-base mb-4">Trending Templates</h3>
           <ul className="space-y-2 text-sm">
@@ -114,7 +110,6 @@ const UseCases = () => {
           </ul>
         </div>
 
-        {/* Helpful Guides */}
         <div>
           <h3 className="font-semibold text-base mb-4">Helpful Guides</h3>
           <ul className="space-y-2 text-sm">

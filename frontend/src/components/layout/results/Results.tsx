@@ -52,7 +52,7 @@ const Results = () => {
               {results.map(({ value, suffix, description, color }, index) => (
                 <div
                   key={index}
-                  className="snap-center shrink-0 w-64 px-2 first:pl-4 last:pr-4" // Largura fixa de 16rem (w-64)
+                  className="snap-center shrink-0 w-64 px-2 first:pl-4 last:pr-4" // let largura fixa
                 >
                   <div
                     className={`p-5 rounded-xl shadow-lg text-white ${color} h-full`}
@@ -73,7 +73,6 @@ const Results = () => {
           </div>
         </div>
 
-        {/* Grid em telas grandes */}
         <div className="hidden lg:grid grid-cols-4 gap-6">
           {results.map(({ value, suffix, description, color }, index) => (
             <div

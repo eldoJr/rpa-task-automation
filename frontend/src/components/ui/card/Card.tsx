@@ -1,28 +1,21 @@
-import { ReactNode } from "react";
+import React from 'react';
 
 interface CardProps {
-  children: ReactNode;
-  className?: string;
+  title: string;
+  value: string;
+  icon: string;
 }
 
-const Card: React.FC<CardProps> = ({ children, className = "" }) => {
+const Card: React.FC<CardProps> = ({ title, value, icon }) => {
   return (
-    <div className={`bg-white shadow-lg p-4 rounded-lg ${className}`}>
-      {children}
+    <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
+      </div>
+      <span className="text-3xl">{icon}</span>
     </div>
   );
 };
 
-const CardHeader: React.FC<CardProps> = ({ children, className = "" }) => (
-  <div className={`mb-3 flex justify-center ${className}`}>{children}</div>
-);
-
-const CardTitle: React.FC<CardProps> = ({ children, className = "" }) => (
-  <h3 className={`text-lg font-semibold text-gray-900 ${className}`}>{children}</h3>
-);
-
-const CardContent: React.FC<CardProps> = ({ children, className = "" }) => (
-  <p className={`text-sm text-gray-600 ${className}`}>{children}</p>
-);
-
-export { Card, CardHeader, CardTitle, CardContent };
+export default Card;

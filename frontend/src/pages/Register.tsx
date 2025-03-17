@@ -8,9 +8,7 @@ import { FaArrowLeft, FaTwitter, FaGithub } from "react-icons/fa";
 function Register() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      {/* Container principal com flex para alinhar as seções */}
       <div className="flex w-full max-w-4xl shadow-lg rounded-2xl overflow-hidden">
-        {/* Seção esquerda: Apresentação visual e branding */}
         <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-8 w-1/3">
           <div className="text-center space-y-4">
             <img
@@ -48,7 +46,6 @@ function Register() {
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
 
-          {/* Cabeçalho do formulário */}
           <div className="mb-8">
             <h2 className="text-sm font-semibold text-gray-500">01.</h2>
             <h1 className="text-3xl font-bold text-black mt-2">Sign up</h1>
@@ -57,7 +54,6 @@ function Register() {
             </p>
           </div>
           
-          {/* Formulário de registro */}
           <form className="mt-6 space-y-5">
             <Input placeholder="User name" label="USERNAME" />
             <Input placeholder="Email" label="EMAIL" type="email" />
@@ -89,14 +85,12 @@ function Register() {
             </Button>
           </form>
 
-          {/* Divisor visual */}
           <div className="relative flex items-center justify-center my-6">
             <div className="flex-grow border-t border-gray-300"></div>
             <span className="mx-4 text-sm text-gray-500">Or register with</span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
 
-          {/* Botões de login social */}
           <div className="flex justify-center gap-4">
             <Button
               variant="outline"

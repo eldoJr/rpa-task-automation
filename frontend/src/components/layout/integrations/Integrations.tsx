@@ -125,7 +125,7 @@ import {
         </p>
   
         <div className="overflow-hidden max-w-6xl mx-auto">
-          {/* Linha 1 - Ícones deslizando para a esquerda */}
+          {/* para a esquerda */}
           <div className="flex space-x-8 animate-scroll-left">
             {icons.map(({ Icon, color }, index) => (
               <div
@@ -137,7 +137,7 @@ import {
             ))}
           </div>
   
-          {/* Linha 2 - Ícones deslizando para a direita */}
+          {/* icones deslizando para a direita */}
           <div className="flex space-x-8 animate-scroll-right mt-4">
             {[...icons].reverse().map(({ Icon, color }, index) => (
               <div
