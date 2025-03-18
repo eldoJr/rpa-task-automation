@@ -1,6 +1,19 @@
-import { Card } from "@/components/ui/card/Card";
 import Button from "@/components/ui/button/Button";
 import { Settings, Users, TrendingUp } from "lucide-react";
+import React from 'react';
+
+interface CardProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+const Card: React.FC<CardProps> = ({ className, children }) => {
+  return (
+    <div className={`shadow-lg rounded-xl p-6 bg-[#F5F0F0] hover:shadow-xl transition-shadow duration-300 ${className}`}>
+      {children}
+    </div>
+  );
+};
 
 const aboutData = [
   {
@@ -25,7 +38,6 @@ const aboutData = [
     color: "bg-pink-500",
   },
 ];
-
 const About = () => {
   return (
     <section className="bg-gradient-to-b from-[#FCF3F8] to-white py-20 text-center">

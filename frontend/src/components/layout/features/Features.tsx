@@ -1,7 +1,34 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card/Card";
 import Button from "@/components/ui/button/Button";
 import { BarChart, Workflow, Code2, ShieldCheck, Users, RefreshCcw } from "lucide-react";
+import React from 'react';
 
+// Define the Card components inline
+interface CardProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+const Card: React.FC<CardProps> = ({ className, children }) => {
+  return (
+    <div className={`group p-6 text-center shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-105 ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <div className="flex justify-center">{children}</div>;
+};
+
+const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
+  return <h3 className={`text-xl font-bold text-gray-900 mb-4 ${className}`}>{children}</h3>;
+};
+
+const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
+  return <p className={`text-sm text-gray-600 ${className}`}>{children}</p>;
+};
+
+// Features data
 const features = [
   {
     title: "AI-Powered Insights & Predictions",
@@ -47,6 +74,7 @@ const features = [
   },
 ];
 
+// FeaturesAutomation component
 const FeaturesAutomation = () => {
   return (
     <section className="bg-[#EAF2EF] py-20 text-center">
@@ -61,17 +89,13 @@ const FeaturesAutomation = () => {
         {features.map(({ title, description, icon, color }, index) => (
           <Card
             key={index}
-            className={`group p-6 text-center shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-105 ${color} animate-fade-in-up delay-${200 + index * 100}`}
+            className={`${color} animate-fade-in-up delay-${200 + index * 100}`}
           >
-            <CardHeader className="flex justify-center">
+            <CardHeader>
               <div className="p-4 rounded-full bg-white shadow-sm">{icon}</div>
             </CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 mb-4">
-              {title}
-            </CardTitle>
-            <CardContent className="text-sm text-gray-600">
-              {description}
-            </CardContent>
+            <CardTitle>{title}</CardTitle>
+            <CardContent>{description}</CardContent>
           </Card>
         ))}
       </div>
