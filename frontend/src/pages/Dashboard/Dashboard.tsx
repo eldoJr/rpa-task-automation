@@ -4,6 +4,8 @@ import Sidebar from "./Sidebar";
 import OverviewCards from "./OverviewCards";
 import StatusChart from "./StatusChart";
 import RecordTable from "./RecordTable";
+import AddAutomation from "./AddAutomation";
+import Integrations from "./Integrations";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -19,7 +21,7 @@ const Dashboard = () => {
               <div className="md:w-1/2">
                 <OverviewCards isSidebarCollapsed={isSidebarCollapsed} />
               </div>
-              
+
               <div className="md:w-1/2">
                 <StatusChart isSidebarCollapsed={isSidebarCollapsed} />
               </div>
@@ -32,8 +34,12 @@ const Dashboard = () => {
         return <RecordTable isSidebarCollapsed={isSidebarCollapsed} />;
       case "analytics":
         return <div>Analytics Content</div>;
+        case "integrations":
+          return <Integrations />;
       case "settings":
-        return <div>Settings Content</div>; 
+        return <div>Settings Content</div>;
+      case "add-automation":
+        return <AddAutomation />;
       default:
         return <div>Select a section</div>;
     }
