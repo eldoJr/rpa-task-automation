@@ -1,4 +1,20 @@
-import { Home, Layers, PlusCircle, Folder, BarChart2, Settings, MessageSquare, Menu, X } from "lucide-react";
+import React from "react";
+import {
+  Home,
+  Layers,
+  PlusCircle,
+  Folder,
+  BarChart2,
+  Settings,
+  MessageSquare,
+  Menu,
+  X,
+  Clock,
+  FileText,
+  Zap,
+  Database,
+  List,
+} from "lucide-react";
 import logo from "@/assets/icons/logo.svg";
 
 interface SidebarProps {
@@ -7,7 +23,6 @@ interface SidebarProps {
   setIsCollapsed: (collapsed: boolean) => void;
 }
 
-
 interface NavItem {
   icon: React.ReactNode;
   label: string;
@@ -15,26 +30,65 @@ interface NavItem {
   action?: () => void;
 }
 
-const Sidebar = ({ setActiveSection, isCollapsed, setIsCollapsed }: SidebarProps) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  setActiveSection,
+  isCollapsed,
+  setIsCollapsed,
+}) => {
   const navItems: NavItem[] = [
-    { icon: <Home size={20} />, label: "Home", section: "home", action: () => window.location.reload() },
-    { icon: <Layers size={20} />, label: "Integrations", section: "integrations" },
-    { icon: <PlusCircle size={20} />, label: "Add Automation", section: "add-automation" },
+    {
+      icon: <Home size={20} />,
+      label: "Home",
+      section: "home",
+      action: () => window.location.reload(),
+    },
+    {
+      icon: <Layers size={20} />,
+      label: "Integrations",
+      section: "integrations",
+    },
+    {
+      icon: <PlusCircle size={20} />,
+      label: "Add Automation",
+      section: "add-automation",
+    },
     { icon: <Folder size={20} />, label: "Projects", section: "projects" },
     { icon: <BarChart2 size={20} />, label: "Analytics", section: "analytics" },
+    {
+      icon: <Clock size={20} />,
+      label: "Real-Time Monitoring",
+      section: "monitoring",
+    },
+    { icon: <FileText size={20} />, label: "Templates", section: "templates" },
+    { icon: <Database size={20} />, label: "Logs & History", section: "logs" },
+    {
+      icon: <Zap size={20} />,
+      label: "Event-Based",
+      section: "event-automation",
+    },
+    { icon: <List size={20} />, label: "Reports", section: "reports" },
     { icon: <Settings size={20} />, label: "Settings", section: "settings" },
   ];
 
+  const handleNavItemClick = (item: NavItem) => {
+    if (item.action) {
+      item.action();
+    } else {
+      setActiveSection(item.section);
+    }
+  };
+
   return (
     <aside
-      className={`bg-gray-900 text-white h-screen p-4 transition-all duration-300 fixed top-0 left-0 z-20 ${
+      className={`bg-gray-900 text-white h-screen transition-all duration-300 fixed top-0 left-0 z-20 flex flex-col ${
         isCollapsed ? "w-16" : "w-64"
       }`}
       aria-label="Sidebar"
     >
-
-      <div className="flex items-center justify-between mb-6">
-        {!isCollapsed && <img src={logo} alt="Logo" className="h-8" />}
+      <div className="p-4 flex items-center justify-between">
+        {!isCollapsed && (
+          <img src={logo} alt="Logo" className="h-8" />
+        )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="text-gray-300 hover:text-white focus:outline-none p-1 rounded-md hover:bg-gray-800 transition-colors"
@@ -44,24 +98,18 @@ const Sidebar = ({ setActiveSection, isCollapsed, setIsCollapsed }: SidebarProps
         </button>
       </div>
 
-      <nav className="mt-6">
-        <ul className="space-y-4">
-          {navItems.map((item, index) => (
-            <li key={index}>
+      <nav className="flex-1 overflow-y-auto px-4 py-2">
+        <ul className="space-y-2">
+          {navItems.map((item) => (
+            <li key={item.section}>
               <button
-                onClick={() => {
-                  if (item.action) {
-                    item.action();
-                  } else {
-                    setActiveSection(item.section); 
-                  }
-                }}
-                className="flex items-center space-x-3 p-2 rounded-lg transition-colors w-full hover:bg-gray-800 hover:text-gray-300"
+                onClick={() => handleNavItemClick(item)}
+                className={`flex items-center w-full p-2 rounded-lg transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-700 ${
+                  isCollapsed ? "justify-center" : "justify-start space-x-3"
+                }`}
                 aria-label={item.label}
               >
-                <div className={isCollapsed ? "mx-auto" : ""}>
-                  {item.icon}
-                </div>
+                <div>{item.icon}</div>
                 {!isCollapsed && <span>{item.label}</span>}
               </button>
             </li>
@@ -69,13 +117,15 @@ const Sidebar = ({ setActiveSection, isCollapsed, setIsCollapsed }: SidebarProps
         </ul>
       </nav>
 
-      <div className="mt-10 border-t border-gray-700 pt-4">
+      <div className="p-4 border-t border-gray-700">
         <button
           onClick={() => setActiveSection("ai-suggestions")}
-          className="flex items-center space-x-3 p-2 rounded-lg transition-colors w-full hover:bg-gray-800 hover:text-gray-300"
+          className={`flex items-center w-full p-2 rounded-lg transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-700 ${
+            isCollapsed ? "justify-center" : "justify-start space-x-3"
+          }`}
           aria-label="AI Suggestions"
         >
-          <div className={isCollapsed ? "mx-auto" : ""}>
+          <div>
             <MessageSquare size={20} />
           </div>
           {!isCollapsed && <span>AI Suggestions</span>}

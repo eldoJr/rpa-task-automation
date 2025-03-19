@@ -4,7 +4,8 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/ui/inputs/input";
 import logo from "@/assets/icons/logo.svg";
 import { FcGoogle } from "react-icons/fc";
-import { FaArrowLeft, FaTwitter, FaGithub } from "react-icons/fa";
+import {  FaTwitter, FaGithub } from "react-icons/fa";
+import { IoChevronBack } from "react-icons/io5";
 
 function Login() {
   const [mounted, setMounted] = useState(false);
@@ -64,7 +65,7 @@ function Login() {
             to="/"
             className="flex items-center py-4 text-gray-600 hover:text-indigo-600 transition-colors group"
           >
-            <FaArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <IoChevronBack className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
 

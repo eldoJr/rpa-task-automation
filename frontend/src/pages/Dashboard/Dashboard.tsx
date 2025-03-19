@@ -17,7 +17,6 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Left side - cards */}
               <div className="md:w-1/2">
                 <OverviewCards isSidebarCollapsed={isSidebarCollapsed} />
               </div>

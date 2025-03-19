@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  X,
+  Filter,
+  Grid,
+  List,
+  Layers,
+  Maximize,
+} from "lucide-react";
 import {
   SiGoogleforms,
   SiGoogledocs,
@@ -19,12 +28,17 @@ import {
 } from "react-icons/si";
 import { FaEnvelope } from "react-icons/fa";
 
-// define the Card component inline
-const Card: React.FC<{ className?: string; children: React.ReactNode }> = ({
-  className,
-  children,
-}) => {
-  return <div className={className}>{children}</div>;
+// Define Card component with hover effects
+const Card: React.FC<{
+  className?: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+}> = ({ className, children, onClick }) => {
+  return (
+    <div className={className} onClick={onClick}>
+      {children}
+    </div>
+  );
 };
 
 interface Integration {
@@ -43,6 +57,11 @@ const Integrations: React.FC = () => {
   const [displayedIntegrations, setDisplayedIntegrations] = useState<
     Integration[]
   >([]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
+  const [hoveredIntegration, setHoveredIntegration] = useState<string | null>(
+    null
+  );
 
   const categories = [
     "Core Nodes",
@@ -61,6 +80,12 @@ const Integrations: React.FC = () => {
     "Utility",
     "HITL",
     "Cybersecurity",
+    "Project Management",
+    "CRM",
+    "Customer Support",
+    "ERP",
+    "Finance",
+    "Marketing & CRM",
   ];
 
   // Memoize the integrations array
@@ -214,6 +239,20 @@ const Integrations: React.FC = () => {
     []
   );
 
+  // Group integrations by category
+  const integrationsByCategory = useMemo(() => {
+    const grouped: Record<string, Integration[]> = {};
+
+    for (const integration of displayedIntegrations) {
+      if (!grouped[integration.category]) {
+        grouped[integration.category] = [];
+      }
+      grouped[integration.category].push(integration);
+    }
+
+    return grouped;
+  }, [displayedIntegrations]);
+
   useEffect(() => {
     let filteredResults = [...integrations];
 
@@ -243,7 +282,7 @@ const Integrations: React.FC = () => {
     });
 
     setDisplayedIntegrations(filteredResults);
-  }, [searchQuery, selectedCategories, sortBy, integrations]); //  integrations is stable
+  }, [searchQuery, selectedCategories, sortBy, integrations]);
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
@@ -253,104 +292,301 @@ const Integrations: React.FC = () => {
     );
   };
 
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+    setSearchQuery("");
+  };
+
+  const toggleMobileFilters = () => {
+    setIsMobileFilterOpen(!isMobileFilterOpen);
+  };
+
+  const handleIntegrationHover = (id: string) => {
+    setHoveredIntegration(id);
+  };
+
+  const handleIntegrationLeave = () => {
+    setHoveredIntegration(null);
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="w-64 p-4 border-r border-gray-200 bg-white shadow-sm">
-        <h2 className="font-semibold text-lg mb-4">Categories</h2>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category} className="flex items-center">
-              <input
-                type="checkbox"
-                id={category}
-                checked={selectedCategories.includes(category)}
-                onChange={() => toggleCategory(category)}
-                className="mr-2 h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
-              />
-              <label
-                htmlFor={category}
-                className="text-sm cursor-pointer hover:text-blue-600 transition-colors"
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+      <div
+        className={`${
+          isMobileFilterOpen ? "block" : "hidden"
+        } md:block md:w-64 p-4 border-r border-gray-200 bg-white shadow-sm md:static fixed inset-0 z-50 overflow-y-auto`}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="font-semibold text-lg">Filters</h2>
+          <button
+            onClick={toggleMobileFilters}
+            className="md:hidden text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {selectedCategories.length > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-500">Active filters</span>
+              <button
+                onClick={clearAllFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
               >
-                {category}
-              </label>
+                Clear all
+              </button>
             </div>
-          ))}
+            <div className="flex flex-wrap gap-2">
+              {selectedCategories.map((category) => (
+                <div
+                  key={`filter-${category}`}
+                  className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs"
+                >
+                  {category}
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="ml-1 text-blue-500 hover:text-blue-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <h3 className="font-medium text-sm mb-2 text-gray-700">Categories</h3>
+          <div className="max-h-96 overflow-y-auto pr-1">
+            {categories.map((category) => (
+              <div key={category} className="flex items-center py-1">
+                <input
+                  type="checkbox"
+                  id={category}
+                  checked={selectedCategories.includes(category)}
+                  onChange={() => toggleCategory(category)}
+                  className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor={category}
+                  className="text-sm cursor-pointer hover:text-blue-600 transition-colors"
+                >
+                  {category}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative">
+      {/* Main content */}
+      <div className="flex-1 p-4 md:p-6">
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+          <div className="relative w-full md:w-auto md:max-w-md">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
               type="text"
               placeholder="Search for integrations, categories..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-96 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full md:w-96 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-        </div>
 
-        <div className="flex justify-between items-center mb-6">
-          <div className="text-sm text-gray-500">
-            {displayedIntegrations.length} of {integrations.length} integrations
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-sm">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+            <button
+              onClick={toggleMobileFilters}
+              className="md:hidden flex items-center gap-1 text-sm text-gray-600 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50"
             >
-              <option value="Popularity">Popularity</option>
-              <option value="Name">Name</option>
-              <option value="Category">Category</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {displayedIntegrations.map((integration) => (
-            <Card
-              key={integration.id}
-              className="bg-white p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow group cursor-pointer"
-            >
-              <div className="flex flex-col items-center mb-3">
-                <div
-                  className="text-3xl mb-3 p-3 rounded-full bg-gray-50 group-hover:scale-110 transition-transform"
-                  style={{ color: integration.color }}
-                >
-                  {integration.icon}
-                </div>
-                <h3 className="font-medium text-center">{integration.name}</h3>
-                <span className="text-xs text-gray-500 mt-1">
-                  {integration.category}
+              <Filter className="h-4 w-4" />
+              <span>Filters</span>
+              {selectedCategories.length > 0 && (
+                <span className="ml-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                  {selectedCategories.length}
                 </span>
-              </div>
-              <p className="text-sm text-gray-600 text-center line-clamp-3 mt-2">
-                {integration.description}
-              </p>
-              <div className="mt-4 text-center">
-                <button className="text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium">
-                  Add Integration
+              )}
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-1 border border-gray-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 ${
+                    viewMode === "grid"
+                      ? "bg-blue-50 text-blue-600"
+                      : "bg-white text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <Grid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 ${
+                    viewMode === "list"
+                      ? "bg-blue-50 text-blue-600"
+                      : "bg-white text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <List className="h-4 w-4" />
                 </button>
               </div>
-            </Card>
-          ))}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Sort:</span>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Popularity">Popularity</option>
+                    <option value="Name">Name</option>
+                    <option value="Category">Category</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
+        <div className="mb-4 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Showing {displayedIntegrations.length} of {integrations.length}{" "}
+            integrations
+          </div>
+        </div>
+
+        {/* Grid View */}
+        {viewMode === "grid" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {displayedIntegrations.map((integration) => (
+              <Card
+                key={integration.id}
+                className="bg-white p-5 border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 group cursor-pointer relative"
+                onClick={() => {}}
+                onMouseEnter={() => handleIntegrationHover(integration.id)}
+                onMouseLeave={handleIntegrationLeave}
+              >
+                <div className="flex flex-col items-center mb-3">
+                  <div
+                    className="text-3xl mb-3 p-4 rounded-full bg-gray-50 group-hover:bg-opacity-80 transition-all duration-300 group-hover:scale-110"
+                    style={{ color: integration.color }}
+                  >
+                    {integration.icon}
+                  </div>
+                  <h3 className="font-medium text-center">
+                    {integration.name}
+                  </h3>
+                  <span className="text-xs text-gray-500 mt-1 px-2 py-1 bg-gray-50 rounded-full">
+                    {integration.category}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 text-center line-clamp-3 mt-3">
+                  {integration.description}
+                </p>
+                <div className="mt-4 flex justify-center">
+                  <button className="text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors font-medium px-4 py-2 rounded-lg">
+                    Add Integration
+                  </button>
+                </div>
+
+                {hoveredIntegration === integration.id && (
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="h-6 w-6 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600">
+                      <Maximize className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* List View */}
+        {viewMode === "list" && (
+          <div className="space-y-4">
+            {Object.entries(integrationsByCategory).map(([category, items]) => (
+              <div
+                key={category}
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <div className="flex items-center">
+                    <Layers className="h-4 w-4 text-gray-500 mr-2" />
+                    <h3 className="font-medium text-gray-700">{category}</h3>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {items.length} integrations
+                  </span>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {items.map((integration) => (
+                    <div
+                      key={integration.id}
+                      className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      onMouseEnter={() =>
+                        handleIntegrationHover(integration.id)
+                      }
+                      onMouseLeave={handleIntegrationLeave}
+                    >
+                      <div
+                        className="flex items-center justify-center h-10 w-10 rounded-lg mr-3"
+                        style={{
+                          backgroundColor: `${integration.color}10`,
+                          color: integration.color,
+                        }}
+                      >
+                        {integration.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center">
+                          <h4 className="font-medium text-gray-900 truncate">
+                            {integration.name}
+                          </h4>
+                        </div>
+                        <p className="text-sm text-gray-500 truncate">
+                          {integration.description}
+                        </p>
+                      </div>
+                      <button className="ml-4 text-sm text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap">
+                        Add Integration
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {displayedIntegrations.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12">
+          <div className="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-xl py-12 px-4">
             <Search className="h-12 w-12 text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-700">
               No integrations found
             </h3>
-            <p className="text-gray-500 mt-2">
-              Try adjusting your search or filters
+            <p className="text-gray-500 mt-2 text-center max-w-md">
+              Try adjusting your search or filters to find what you're looking
+              for
             </p>
+            <button
+              onClick={clearAllFilters}
+              className="mt-4 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium rounded-lg text-sm transition-colors"
+            >
+              Clear all filters
+            </button>
           </div>
         )}
       </div>
