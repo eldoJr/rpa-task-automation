@@ -9,7 +9,7 @@ const data = [
   { name: "Passed", value: 68, color: "#16A34A" },
   { name: "Failed", value: 3, color: "#DC2626" },
   { name: "Aborted", value: 4, color: "#FACC15" },
-  { name: "In Progress", value: 24, color: "#2563EB" },
+  { name: "In Progress", value: 44, color: "#2563EB" },
 ];
 
 const StatusChart: React.FC<StatusChartProps> = () => {
