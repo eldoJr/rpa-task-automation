@@ -1,11 +1,62 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Button from "@/components/ui/button/Button";
-import Input from "@/components/ui/inputs/input";
 import logo from "@/assets/icons/logo.svg";
 import { FcGoogle } from "react-icons/fc";
-import {  FaTwitter, FaGithub } from "react-icons/fa";
+import { FaTwitter, FaGithub } from "react-icons/fa";
 import { IoChevronBack } from "react-icons/io5";
+
+// Componente Button local
+const Button = ({
+  children,
+  className,
+  variant = "default",
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  variant?: "default" | "outline";
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+  const baseStyles = "font-medium rounded-lg transition-colors flex items-center justify-center";
+  const variantStyles = {
+    default: "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white",
+    outline: "border border-gray-300 hover:bg-gray-50 text-gray-700",
+  };
+
+  return (
+    <button
+      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Componente Input local
+const Input = ({
+  placeholder,
+  label,
+  type = "text",
+  className,
+  ...props
+}: {
+  placeholder: string;
+  label: string;
+  type?: string;
+  className?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) => {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`}
+        {...props}
+      />
+    </div>
+  );
+};
 
 function Login() {
   const [mounted, setMounted] = useState(false);
@@ -23,7 +74,7 @@ function Login() {
         <div className="absolute -bottom-20 left-40 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-10"></div>
-      <div 
+      <div
         className={`flex w-full max-w-4xl shadow-xl rounded-3xl overflow-hidden bg-white/90 backdrop-blur-sm z-20 relative transition-all duration-700 transform ${
           mounted ? "scale-100 opacity-100" : "scale-95 opacity-0"
         }`}
@@ -32,7 +83,7 @@ function Login() {
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0 bg-grid-indigo-500/20"></div>
           </div>
-          
+
           <div className="text-center space-y-4 relative z-10">
             <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl shadow-sm mx-auto">
               <img
@@ -41,9 +92,12 @@ function Login() {
                 className="w-28 h-28 mb-4 transition-all hover:scale-105 duration-300"
               />
             </div>
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Welcome Back!</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              Welcome Back!
+            </h2>
             <p className="text-gray-600 text-sm mt-2 max-w-xs">
-              Streamline your workflow with our powerful automation tools designed to save you time and effort.
+              Streamline your workflow with our powerful automation tools
+              designed to save you time and effort.
             </p>
           </div>
 
@@ -89,10 +143,10 @@ function Login() {
 
           <form className="mt-6 space-y-5">
             <div className="space-y-1">
-              <Input 
-                placeholder="Email" 
-                label="EMAIL" 
-                type="email" 
+              <Input
+                placeholder="Email"
+                label="EMAIL"
+                type="email"
                 className="rounded-xl focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>

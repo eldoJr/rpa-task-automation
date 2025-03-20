@@ -1,10 +1,60 @@
 import { Link } from "react-router-dom";
-import Button from "@/components/ui/button/Button";
-import Input from "@/components/ui/inputs/input";
 import logo from "@/assets/icons/logo.svg";
 import { FcGoogle } from "react-icons/fc";
-import {  FaTwitter, FaGithub } from "react-icons/fa";
+import { FaTwitter, FaGithub } from "react-icons/fa";
 import { IoChevronBack } from "react-icons/io5";
+
+// Componente Button local
+const Button = ({
+  children,
+  className,
+  variant = "default",
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  variant?: "default" | "outline";
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+  const baseStyles =
+    "font-medium rounded-lg transition-colors flex items-center justify-center";
+  const variantStyles = {
+    default: "bg-blue-600 hover:bg-blue-700 text-white",
+    outline: "border border-gray-300 hover:bg-gray-50 text-gray-700",
+  };
+
+  return (
+    <button
+      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Componente Input local
+const Input = ({
+  placeholder,
+  label,
+  type = "text",
+  ...props
+}: {
+  placeholder: string;
+  label: string;
+  type?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) => {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        {...props}
+      />
+    </div>
+  );
+};
 
 function Register() {
   return (
@@ -17,9 +67,12 @@ function Register() {
               alt="Logo da AutomateRFP"
               className="w-28 h-28 mb-4"
             />
-            <h2 className="text-3xl font-bold text-gray-900">Welcome to AutomateRFP</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Welcome to AutomateRFP
+            </h2>
             <p className="text-gray-600 text-sm mt-2 max-w-xs">
-              Streamline your workflow with our powerful automation tools designed to save you time and effort.
+              Streamline your workflow with our powerful automation tools
+              designed to save you time and effort.
             </p>
           </div>
 
@@ -51,10 +104,11 @@ function Register() {
             <h2 className="text-sm font-semibold text-gray-500">01.</h2>
             <h1 className="text-3xl font-bold text-black mt-2">Sign up</h1>
             <p className="text-gray-600 text-sm mt-2">
-              Register or log in to access your account and start automating your workflow.
+              Register or log in to access your account and start automating
+              your workflow.
             </p>
           </div>
-          
+
           <form className="mt-6 space-y-5">
             <Input placeholder="User name" label="USERNAME" />
             <Input placeholder="Email" label="EMAIL" type="email" />
