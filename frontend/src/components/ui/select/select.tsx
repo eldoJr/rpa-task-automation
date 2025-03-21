@@ -1,4 +1,3 @@
-// components/ui/select.tsx
 import * as React from "react";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -16,7 +15,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <select
         ref={ref}
-        className={`flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 ${className || ""}`}
+        className={className}
         onChange={handleChange}
         {...props}
       >
@@ -27,4 +26,61 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = "Select";
 
-export { Select };
+type SelectTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <button ref={ref} className={className} {...props}>
+        {children}
+      </button>
+    );
+  }
+);
+SelectTrigger.displayName = "SelectTrigger";
+
+interface SelectValueProps extends React.HTMLAttributes<HTMLSpanElement> {
+  placeholder?: string;
+}
+
+const SelectValue = React.forwardRef<HTMLSpanElement, SelectValueProps>(
+  ({ className, placeholder, children, ...props }, ref) => {
+    return (
+      <span ref={ref} className={className} {...props}>
+        {children || placeholder}
+      </span>
+    );
+  }
+);
+SelectValue.displayName = "SelectValue";
+
+type SelectContentProps = React.HTMLAttributes<HTMLDivElement>;
+
+const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <div ref={ref} className={className} {...props}>
+        {children}
+      </div>
+    );
+  }
+);
+SelectContent.displayName = "SelectContent";
+
+interface SelectItemProps
+  extends React.OptionHTMLAttributes<HTMLOptionElement> {
+  value: string;
+}
+
+const SelectItem = React.forwardRef<HTMLOptionElement, SelectItemProps>(
+  ({ className, children, value, ...props }, ref) => {
+    return (
+      <option ref={ref} value={value} className={className} {...props}>
+        {children}
+      </option>
+    );
+  }
+);
+SelectItem.displayName = "SelectItem";
+
+export { Select, SelectTrigger, SelectValue, SelectContent, SelectItem };

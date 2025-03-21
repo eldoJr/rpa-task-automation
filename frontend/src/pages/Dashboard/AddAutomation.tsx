@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided } from "react-beautiful-dnd";
+import React, { useReducer, useState } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
 import {
   Card,
   CardContent,
@@ -10,186 +15,438 @@ import {
 } from "@/components/ui/card/card";
 import { Button } from "@/components/ui/button/Button";
 import { Input } from "@/components/ui/input/input";
-import { Select } from "@/components/ui/select/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select/select";
 import { Textarea } from "@/components/ui/textarea/textarea";
 import { Switch } from "@/components/ui/switch/switch";
-import { Tooltip } from "@/components/ui/tooltip/tooltip";
 import {
-  PlusCircle,
-  Save,
-  Clock,
-  Database,
-  Mail,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip/tooltip";
+import { Badge } from "@/components/ui/badge/badge";
+import { Separator } from "@/components/ui/separator/separator";
+import {
   Calendar,
   FileText,
   Settings,
   HelpCircle,
   Trash2,
+  GripVertical,
+  AlertCircle,
+  Copy,
+  Share2,
 } from "lucide-react";
+import {
+  FaPlusCircle,
+  FaSave,
+  FaClock,
+  FaDatabase,
+  FaMailBulk,
+} from "react-icons/fa";
+// Types
+type StepType = "email" | "excel" | "database" | "ocr" | "api" | "condition";
+type TriggerType = "schedule" | "email" | "database" | "calendar";
 
-type EmailConfig = {
+interface EmailConfig {
   folder: string;
   filter: string;
-};
+}
 
-type ExcelConfig = {
+interface ExcelConfig {
   file: string;
   sheet: string;
-};
+}
 
-type OCRConfig = {
+interface OCRConfig {
   dataPoints: string[];
-};
+}
 
-type DatabaseConfig = {
+interface DatabaseConfig {
   query: string;
   connection: string;
-};
+}
 
-type APIConfig = {
+interface APIConfig {
   endpoint: string;
   method: string;
   headers: Record<string, string>;
-};
+}
 
-type ConditionConfig = {
+interface ConditionConfig {
   field: string;
   operator: string;
   value: string;
-};
+}
 
-// Union type for all possible configs
-type StepConfig = 
+type StepConfig =
   | EmailConfig
   | ExcelConfig
   | OCRConfig
   | DatabaseConfig
   | APIConfig
   | ConditionConfig
-  | Record<string, string | string[] | number | boolean>;
+  | Record<string, unknown>;
 
-// Step type with specific config
 interface AutomationStep {
   id: string;
-  type: string;
+  type: StepType;
   name: string;
   config: StepConfig;
 }
 
-// Template interface
 interface AutomationTemplate {
   id: string;
   name: string;
+  description: string;
+  steps: AutomationStep[];
 }
 
-// Available step interface
 interface AvailableStep {
-  id: string;
+  id: StepType;
   name: string;
+  description: string;
   icon: React.ReactNode;
 }
 
-// Trigger type interface
-interface TriggerType {
-  id: string;
+interface TriggerTypeOption {
+  id: TriggerType;
   name: string;
+  description: string;
   icon: React.ReactNode;
 }
 
+// State Types
+interface AutomationState {
+  name: string;
+  description: string;
+  steps: AutomationStep[];
+  trigger: TriggerType;
+  isActive: boolean;
+  selectedTemplate: string;
+}
+
+// Action Types
+type AutomationAction =
+  | { type: "SET_NAME"; payload: string }
+  | { type: "SET_DESCRIPTION"; payload: string }
+  | { type: "SET_TRIGGER"; payload: TriggerType }
+  | { type: "SET_ACTIVE"; payload: boolean }
+  | { type: "ADD_STEP"; payload: AutomationStep }
+  | { type: "REMOVE_STEP"; payload: string }
+  | { type: "REORDER_STEPS"; payload: AutomationStep[] }
+  | { type: "LOAD_TEMPLATE"; payload: { template: AutomationTemplate } }
+  | { type: "RESET" };
+
+// Constant Data
+const AVAILABLE_STEPS: AvailableStep[] = [
+  {
+    id: "email",
+    name: "Email Integration",
+    description: "Process incoming emails or send notifications",
+    icon: <FaMailBulk size={20} />,
+  },
+  {
+    id: "excel",
+    name: "Excel Processing",
+    description: "Read from or write to Excel spreadsheets",
+    icon: <FileText size={20} />,
+  },
+  {
+    id: "database",
+    name: "Database Query",
+    description: "Execute SQL queries or database operations",
+    icon: <FaDatabase size={20} />,
+  },
+  {
+    id: "ocr",
+    name: "OCR Recognition",
+    description: "Extract text from images or documents",
+    icon: <FileText size={20} />,
+  },
+  {
+    id: "api",
+    name: "API Request",
+    description: "Make HTTP requests to external services",
+    icon: <Settings size={20} />,
+  },
+  {
+    id: "condition",
+    name: "Condition",
+    description: "Add branching logic to your workflow",
+    icon: <AlertCircle size={20} />,
+  },
+];
+
+const TRIGGER_TYPES: TriggerTypeOption[] = [
+  {
+    id: "schedule",
+    name: "Schedule Based",
+    description: "Run on a defined schedule",
+    icon: <FaClock size={16} />,
+  },
+  {
+    id: "email",
+    name: "Email Trigger",
+    description: "Triggered when emails arrive",
+    icon: <FaMailBulk size={16} />,
+  },
+  {
+    id: "database",
+    name: "Database Change",
+    description: "Triggered on database updates",
+    icon: <FaDatabase size={16} />,
+  },
+  {
+    id: "calendar",
+    name: "Calendar Event",
+    description: "Triggered by calendar events",
+    icon: <Calendar size={16} />,
+  },
+];
+
+const TEMPLATES: AutomationTemplate[] = [
+  {
+    id: "data-extraction",
+    name: "Data Extraction from Emails",
+    description:
+      "Extract information from incoming emails and save to spreadsheets",
+    steps: [
+      {
+        id: "step-1",
+        type: "email",
+        name: "Fetch Emails",
+        config: { folder: "Inbox", filter: "unread" } as EmailConfig,
+      },
+      {
+        id: "step-2",
+        type: "ocr",
+        name: "Extract Data",
+        config: {
+          dataPoints: ["invoice_number", "total_amount", "date"],
+        } as OCRConfig,
+      },
+      {
+        id: "step-3",
+        type: "excel",
+        name: "Update Spreadsheet",
+        config: { file: "invoices.xlsx", sheet: "Processed" } as ExcelConfig,
+      },
+    ],
+  },
+  {
+    id: "form-filling",
+    name: "Automated Form Filling",
+    description: "Automatically fill forms using data from various sources",
+    steps: [
+      {
+        id: "step-1",
+        type: "database",
+        name: "Fetch Customer Data",
+        config: {
+          connection: "customers_db",
+          query: "SELECT * FROM customers WHERE status = 'pending'",
+        } as DatabaseConfig,
+      },
+      {
+        id: "step-2",
+        type: "api",
+        name: "Submit Form Data",
+        config: {
+          endpoint: "https://api.example.com/forms",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        } as APIConfig,
+      },
+    ],
+  },
+  {
+    id: "invoice-processing",
+    name: "Invoice Processing",
+    description:
+      "Automatically process and record invoices from various sources",
+    steps: [
+      {
+        id: "step-1",
+        type: "email",
+        name: "Monitor Invoice Emails",
+        config: {
+          folder: "Invoices",
+          filter: "subject:invoice OR subject:receipt",
+        } as EmailConfig,
+      },
+      {
+        id: "step-2",
+        type: "ocr",
+        name: "Extract Invoice Details",
+        config: {
+          dataPoints: [
+            "invoice_number",
+            "date",
+            "amount",
+            "vendor",
+            "due_date",
+          ],
+        } as OCRConfig,
+      },
+      {
+        id: "step-3",
+        type: "condition",
+        name: "Check Amount Threshold",
+        config: {
+          field: "amount",
+          operator: ">",
+          value: "1000",
+        } as ConditionConfig,
+      },
+      {
+        id: "step-4",
+        type: "database",
+        name: "Record in Accounting System",
+        config: {
+          connection: "accounting_db",
+          query: "INSERT INTO invoices VALUES (?, ?, ?, ?, ?)",
+        } as DatabaseConfig,
+      },
+    ],
+  },
+];
+
+// Reducer Function
+const automationReducer = (
+  state: AutomationState,
+  action: AutomationAction
+): AutomationState => {
+  switch (action.type) {
+    case "SET_NAME":
+      return { ...state, name: action.payload };
+    case "SET_DESCRIPTION":
+      return { ...state, description: action.payload };
+    case "SET_TRIGGER":
+      return { ...state, trigger: action.payload };
+    case "SET_ACTIVE":
+      return { ...state, isActive: action.payload };
+    case "ADD_STEP":
+      return { ...state, steps: [...state.steps, action.payload] };
+    case "REMOVE_STEP":
+      return {
+        ...state,
+        steps: state.steps.filter((step) => step.id !== action.payload),
+      };
+    case "REORDER_STEPS":
+      return { ...state, steps: action.payload };
+    case "LOAD_TEMPLATE":
+      return {
+        ...state,
+        name: action.payload.template.name,
+        description: action.payload.template.description,
+        steps: action.payload.template.steps,
+        selectedTemplate: action.payload.template.id,
+      };
+    case "RESET":
+      return initialState;
+    default:
+      return state;
+  }
+};
+
+// Initial State
+const initialState: AutomationState = {
+  name: "",
+  description: "",
+  steps: [],
+  trigger: "schedule",
+  isActive: true,
+  selectedTemplate: "",
+};
+
+// Custom Hooks
+const useAIAssistant = (
+  automationName: string,
+  automationDescription: string
+) => {
+  const getSuggestions = () => {
+    const suggestions = [];
+
+    if (automationName.toLowerCase().includes("email")) {
+      suggestions.push(
+        "Start with an Email Trigger to monitor incoming messages"
+      );
+    }
+
+    if (automationDescription.toLowerCase().includes("extract")) {
+      suggestions.push("Add OCR Recognition to extract text from documents");
+    }
+
+    if (automationDescription.toLowerCase().includes("excel")) {
+      suggestions.push("Include Excel Processing to update your spreadsheets");
+    }
+
+    suggestions.push(
+      "Consider adding a condition to handle different scenarios"
+    );
+
+    return suggestions;
+  };
+
+  return { getSuggestions };
+};
+
+// Component Functions
+const findStepById = (id: StepType): AvailableStep | undefined => {
+  return AVAILABLE_STEPS.find((step) => step.id === id);
+};
+
+const findTemplateById = (id: string): AutomationTemplate | undefined => {
+  return TEMPLATES.find((template) => template.id === id);
+};
+
+// Main Component
 const AddAutomation: React.FC = () => {
-  const [automationName, setAutomationName] = useState<string>("");
-  const [automationDescription, setAutomationDescription] = useState<string>("");
-  const [steps, setSteps] = useState<AutomationStep[]>([]);
-  const [selectedTrigger, setSelectedTrigger] = useState<string>("schedule");
-  const [isActive, setIsActive] = useState<boolean>(true);
+  const [state, dispatch] = useReducer(automationReducer, initialState);
   const [showAIAssistant, setShowAIAssistant] = useState<boolean>(false);
+  const { getSuggestions } = useAIAssistant(state.name, state.description);
 
-  // Template categories
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-
-  // Available step types
-  const availableSteps: AvailableStep[] = [
-    { id: "email", name: "Email Integration", icon: <Mail size={20} /> },
-    { id: "excel", name: "Excel Processing", icon: <FileText size={20} /> },
-    { id: "database", name: "Database Query", icon: <Database size={20} /> },
-    { id: "ocr", name: "OCR Recognition", icon: <FileText size={20} /> },
-    { id: "api", name: "API Request", icon: <Settings size={20} /> },
-    { id: "condition", name: "Condition", icon: <Settings size={20} /> },
-  ];
-
-  // Available templates
-  const templates: AutomationTemplate[] = [
-    { id: "data-extraction", name: "Data Extraction from Emails" },
-    { id: "form-filling", name: "Automated Form Filling" },
-    { id: "invoice-processing", name: "Invoice Processing" },
-    { id: "customer-service", name: "Customer Service Automation" },
-  ];
-
-  // Trigger types
-  const triggerTypes: TriggerType[] = [
-    { id: "schedule", name: "Schedule Based", icon: <Clock size={16} /> },
-    { id: "email", name: "Email Trigger", icon: <Mail size={16} /> },
-    { id: "database", name: "Database Change", icon: <Database size={16} /> },
-    { id: "calendar", name: "Calendar Event", icon: <Calendar size={16} /> },
-  ];
-
+  // Event Handlers
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
-    const items = Array.from(steps);
+    const items = Array.from(state.steps);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setSteps(items);
+    dispatch({ type: "REORDER_STEPS", payload: items });
   };
 
-  const addStep = (stepType: string) => {
-    const step = availableSteps.find((s) => s.id === stepType);
-    if (!step) return;
+  const addStep = (stepType: StepType) => {
+    const stepDefinition = findStepById(stepType);
+    if (!stepDefinition) return;
 
     const newStep: AutomationStep = {
       id: `step-${Date.now()}`,
       type: stepType,
-      name: step.name,
+      name: stepDefinition.name,
       config: {},
     };
 
-    setSteps([...steps, newStep]);
+    dispatch({ type: "ADD_STEP", payload: newStep });
   };
 
   const removeStep = (stepId: string) => {
-    setSteps(steps.filter((step) => step.id !== stepId));
+    dispatch({ type: "REMOVE_STEP", payload: stepId });
   };
 
   const loadTemplate = (templateId: string) => {
-    setSelectedTemplate(templateId);
+    const template = findTemplateById(templateId);
+    if (!template) return;
 
-    if (templateId === "data-extraction") {
-      setSteps([
-        {
-          id: "step-1",
-          type: "email",
-          name: "Fetch Emails",
-          config: { folder: "Inbox", filter: "unread" } as EmailConfig,
-        },
-        {
-          id: "step-2",
-          type: "ocr",
-          name: "Extract Data",
-          config: { dataPoints: ["invoice_number", "total_amount", "date"] } as OCRConfig,
-        },
-        {
-          id: "step-3",
-          type: "excel",
-          name: "Update Spreadsheet",
-          config: { file: "invoices.xlsx", sheet: "Processed" } as ExcelConfig,
-        },
-      ]);
-      setAutomationName("Email Data Extraction");
-      setAutomationDescription(
-        "Automatically extract data from incoming emails and update Excel spreadsheet"
-      );
-    }
+    dispatch({ type: "LOAD_TEMPLATE", payload: { template } });
   };
 
   const toggleAIAssistant = () => {
@@ -198,266 +455,455 @@ const AddAutomation: React.FC = () => {
 
   const saveAutomation = () => {
     const automation = {
-      name: automationName,
-      description: automationDescription,
-      trigger: selectedTrigger,
-      isActive,
-      steps,
+      name: state.name,
+      description: state.description,
+      trigger: state.trigger,
+      isActive: state.isActive,
+      steps: state.steps,
     };
 
     console.log("Saving automation:", automation);
     alert("Automation saved successfully!");
   };
 
+  // UI Component: Step Card
+  const StepCard = ({
+    step,
+    index,
+    onRemove,
+  }: {
+    step: AutomationStep;
+    index: number;
+    onRemove: () => void;
+  }) => (
+    <Card className="bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          {/* Left Side: Step Details */}
+          <div className="flex items-center gap-3">
+            {/* Drag Handle and Step Number */}
+            <div className="flex flex-col items-center">
+              <GripVertical className="h-5 w-5 text-gray-300 cursor-move hover:text-gray-500 transition-colors" />
+              <Badge
+                variant="outline"
+                className="mt-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-100"
+              >
+                {index + 1}
+              </Badge>
+            </div>
+
+            {/* Step Name and Type */}
+            <div>
+              <h4 className="font-semibold text-gray-800">{step.name}</h4>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-blue-100 text-blue-700"
+                >
+                  {step.type}
+                </Badge>
+                {Object.keys(step.config).length > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-green-50 text-green-700 border-green-100"
+                  >
+                    Configured
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Action Buttons */}
+          <div className="flex gap-2">
+            {/* Configure Button */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-white border border-gray-200 shadow-sm">
+                  Configure step
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* Remove Button */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    onClick={onRemove}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-white border border-gray-200 shadow-sm">
+                  Remove step
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      <div className="flex items-center mb-6">
-        <h1 className="text-3xl font-bold flex-grow">Create New Automation</h1>
-        <Button variant="outline" onClick={toggleAIAssistant} className="mr-2">
-          AI Assistant {showAIAssistant ? "ON" : "OFF"}
-        </Button>
-        <Button
-          onClick={saveAutomation}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <Save size={16} className="mr-2" /> Save Automation
-        </Button>
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Create New Automation</h1>
+          <p className="text-gray-500 mt-1">
+            Design a custom workflow to automate your business processes
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={toggleAIAssistant}
+            className="gap-2"
+          >
+            <HelpCircle size={16} />
+            AI Assistant {showAIAssistant ? "ON" : "OFF"}
+          </Button>
+          <Button variant="outline" className="gap-2">
+            <Copy size={16} />
+            Duplicate
+          </Button>
+          <Button variant="outline" className="gap-2">
+            <Share2 size={16} />
+            Share
+          </Button>
+          <Button
+            onClick={saveAutomation}
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+          >
+            <FaSave size={16} />
+            Save Automation
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Left Sidebar - Available Components */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Components</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Settings size={18} />
+                Components
+              </CardTitle>
               <CardDescription>
-                Drag and drop to build your automation
+                Add steps to build your automation
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col space-y-2">
-                {availableSteps.map((step) => (
-                  <Button
-                    key={step.id}
-                    variant="outline"
-                    className="justify-start text-left"
-                    onClick={() => addStep(step.id)}
-                  >
-                    <div className="mr-2">{step.icon}</div>
-                    {step.name}
-                    <PlusCircle size={16} className="ml-auto" />
-                  </Button>
-                ))}
-              </div>
+            <CardContent className="space-y-3">
+              {AVAILABLE_STEPS.map((step) => (
+                <Button
+                  key={step.id}
+                  variant="outline"
+                  className="w-full justify-start text-left hover:bg-blue-50 transition-colors group"
+                  onClick={() => addStep(step.id)}
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-3">
+                      <div className="text-blue-600 bg-blue-50 p-2 rounded-md">
+                        {step.icon}
+                      </div>
+                      <div>
+                        <div className="font-medium">{step.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {step.description}
+                        </div>
+                      </div>
+                    </div>
+                    <FaPlusCircle
+                      size={16}
+                      className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                </Button>
+              ))}
             </CardContent>
-            <CardFooter>
-              <div className="w-full">
-                <p className="text-sm font-medium mb-2">Templates</p>
+            <Separator />
+            <CardFooter className="pt-4">
+              <div className="w-full space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-sm">Templates</h3>
+                  <Badge variant="outline" className="text-xs">
+                    Save Time
+                  </Badge>
+                </div>
                 <Select
-                  value={selectedTemplate}
+                  value={state.selectedTemplate}
                   onValueChange={loadTemplate}
                 >
-                  <option value="" disabled>
-                    Load Template...
-                  </option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.name}
-                    </option>
-                  ))}
+                  <SelectTrigger>
+                    <SelectValue placeholder="Load Template..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEMPLATES.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </CardFooter>
+          </Card>
+
+          {/* Documentation Card */}
+          <Card className="bg-gray-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Documentation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-gray-600">
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2">
+                  <FaMailBulk size={14} />
+                  <span>Email triggers monitor for incoming messages</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <FaDatabase size={14} />
+                  <span>Database steps execute SQL queries</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <FileText size={14} />
+                  <span>OCR extracts text from documents & images</span>
+                </li>
+              </ul>
+              <Button
+                variant="link"
+                size="sm"
+                className="p-0 h-auto mt-2 text-blue-600"
+              >
+                View full documentation
+              </Button>
+            </CardContent>
           </Card>
         </div>
 
         {/* Main Content - Automation Builder */}
         <div className="lg:col-span-3">
-          <Card>
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Automation Details</CardTitle>
+              <CardTitle className="text-lg font-semibold">
+                Automation Details
+              </CardTitle>
               <CardDescription>
-                Configure your automation properties
+                Configure the basic properties for your workflow
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-2">
                     Automation Name
                   </label>
                   <Input
-                    value={automationName}
-                    onChange={(e) => setAutomationName(e.target.value)}
+                    value={state.name}
+                    onChange={(e) =>
+                      dispatch({ type: "SET_NAME", payload: e.target.value })
+                    }
                     placeholder="Enter automation name"
+                    className="w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-2">
                     Trigger Type
                   </label>
                   <Select
-                    value={selectedTrigger}
-                    onValueChange={setSelectedTrigger}
+                    value={state.trigger}
+                    onValueChange={(value) =>
+                      dispatch({
+                        type: "SET_TRIGGER",
+                        payload: value as TriggerType,
+                      })
+                    }
                   >
-                    {triggerTypes.map((trigger) => (
-                      <option key={trigger.id} value={trigger.id}>
-                        {trigger.name}
-                      </option>
-                    ))}
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a trigger type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRIGGER_TYPES.map((trigger) => (
+                        <SelectItem key={trigger.id} value={trigger.id}>
+                          <div className="flex items-center gap-2">
+                            {trigger.icon}
+                            <span>{trigger.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-2">
                     Description
                   </label>
                   <Textarea
-                    value={automationDescription}
-                    onChange={(e) => setAutomationDescription(e.target.value)}
+                    value={state.description}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "SET_DESCRIPTION",
+                        payload: e.target.value,
+                      })
+                    }
                     placeholder="Describe what this automation does"
                     rows={3}
+                    className="w-full resize-y"
                   />
                 </div>
                 <div className="md:col-span-2 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <label className="mr-2 text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={state.isActive}
+                      onCheckedChange={(checked) =>
+                        dispatch({ type: "SET_ACTIVE", payload: checked })
+                      }
+                    />
+                    <label className="font-medium text-sm">
                       Activate Immediately
                     </label>
-                    <Switch checked={isActive} onCheckedChange={setIsActive} />
                   </div>
-                  <Tooltip content="Set whether this automation should be active immediately after saving">
-                    <Button variant="ghost" size="sm" className="p-1">
-                      <HelpCircle size={16} />
-                    </Button>
-                  </Tooltip>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <HelpCircle size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        When enabled, this automation will start running
+                        immediately after saving. Otherwise, you'll need to
+                        manually activate it later.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h3 className="text-lg font-medium mb-2">Automation Flow</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Add and arrange steps to create your automation workflow
-                </p>
-              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Automation Flow</h3>
+                  <Badge variant="secondary">{state.steps.length} Steps</Badge>
+                </div>
 
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="steps">
-                  {(provided: DroppableProvided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-3"
-                    >
-                      {steps.length === 0 ? (
-                        <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                          <p className="text-gray-500">
-                            Drag components here or select a template to start
-                            building your automation
-                          </p>
-                        </div>
-                      ) : (
-                        steps.map((step, index) => (
-                          <Draggable
-                            key={step.id}
-                            draggableId={step.id}
-                            index={index}
-                          >
-                            {(provided: DraggableProvided) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className="border rounded-lg p-4 bg-white shadow-sm"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
-                                      {index + 1}
-                                    </span>
-                                    <div>
-                                      <h4 className="font-medium">
-                                        {step.name}
-                                      </h4>
-                                      <p className="text-sm text-gray-500">
-                                        Type: {step.type}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex space-x-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-gray-400 hover:text-gray-500"
-                                    >
-                                      <Settings size={16} />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-red-400 hover:text-red-500"
-                                      onClick={() => removeStep(step.id)}
-                                    >
-                                      <Trash2 size={16} />
-                                    </Button>
-                                  </div>
+                <p className="text-sm text-gray-500">
+                  {state.steps.length === 0
+                    ? "Add steps from the components panel to create your workflow"
+                    : "Drag to reorder steps in your workflow sequence"}
+                </p>
+
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="steps">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-3 mt-3"
+                      >
+                        {state.steps.length === 0 ? (
+                          <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50">
+                            <p className="text-gray-500 mb-2">
+                              Your workflow is empty
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              Add components from the left sidebar or select a
+                              template to get started
+                            </p>
+                          </div>
+                        ) : (
+                          state.steps.map((step, index) => (
+                            <Draggable
+                              key={step.id}
+                              draggableId={step.id}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  <StepCard
+                                    step={step}
+                                    index={index}
+                                    onRemove={() => removeStep(step.id)}
+                                  />
                                 </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))
-                      )}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+                              )}
+                            </Draggable>
+                          ))
+                        )}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
             </CardContent>
           </Card>
 
-          {/* AI Assistant Panel (conditionally rendered) */}
           {showAIAssistant && (
-            <Card className="mt-6 border-blue-200 bg-blue-50">
+            <Card className="border-blue-200 bg-blue-50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">AI Assistant</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <HelpCircle size={18} className="text-blue-600" />
+                  AI Assistant
+                </CardTitle>
                 <CardDescription>
-                  I can help you build your automation workflow
+                  Smart suggestions to help build your automation workflow
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-3 rounded-md">
-                  <p className="text-sm">
-                    Based on your automation name and description, I suggest
-                    adding these steps:
+                <div className="bg-white p-4 rounded-md shadow-sm">
+                  <p className="text-sm font-medium mb-3">
+                    Based on your automation details, I recommend:
                   </p>
-                  <ul className="mt-2 text-sm pl-5 list-disc">
-                    {automationName.toLowerCase().includes("email") && (
-                      <li className="mb-1">
-                        Start with an Email Trigger to monitor incoming messages
+                  <ul className="space-y-2 pl-5 list-disc text-sm">
+                    {getSuggestions().map((suggestion, index) => (
+                      <li key={index} className="text-gray-700">
+                        {suggestion}
                       </li>
-                    )}
-                    {automationDescription
-                      .toLowerCase()
-                      .includes("extract") && (
-                      <li className="mb-1">
-                        Add OCR Recognition to extract text from documents
-                      </li>
-                    )}
-                    {automationDescription.toLowerCase().includes("excel") && (
-                      <li className="mb-1">
-                        Include Excel Processing to update your spreadsheets
-                      </li>
-                    )}
-                    <li className="mb-1">
-                      Consider adding a condition to handle different scenarios
-                    </li>
+                    ))}
                   </ul>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 text-xs w-full"
-                  >
-                    Generate Complete Workflow
-                  </Button>
+
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-center text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <FaPlusCircle size={14} className="mr-2" />
+                      Generate Complete Workflow
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full justify-center text-gray-700"
+                    >
+                      <Settings size={14} className="mr-2" />
+                      Optimize Current Workflow
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
