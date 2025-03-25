@@ -28,11 +28,13 @@ import {
 } from "react-icons/si";
 import { FaEnvelope } from "react-icons/fa";
 
-// Define Card component with hover effects
+// component with hover effects
 const Card: React.FC<{
   className?: string;
   children: React.ReactNode;
   onClick?: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }> = ({ className, children, onClick }) => {
   return (
     <div className={className} onClick={onClick}>
@@ -88,7 +90,6 @@ const Integrations: React.FC = () => {
     "Marketing & CRM",
   ];
 
-  // Memoize the integrations array
   const integrations = useMemo<Integration[]>(
     () => [
       {
@@ -239,7 +240,7 @@ const Integrations: React.FC = () => {
     []
   );
 
-  // Group integrations by category
+  // group integrations by category
   const integrationsByCategory = useMemo(() => {
     const grouped: Record<string, Integration[]> = {};
 
@@ -330,7 +331,7 @@ const Integrations: React.FC = () => {
           </button>
         </div>
 
-        {/* Active Filters */}
+        {/* active Filters */}
         {selectedCategories.length > 0 && (
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
@@ -363,7 +364,6 @@ const Integrations: React.FC = () => {
           </div>
         )}
 
-        {/* Categories */}
         <div className="mb-6">
           <h3 className="font-medium text-sm mb-3 text-gray-700">Categories</h3>
           <div className="max-h-96 overflow-y-auto pr-2">
