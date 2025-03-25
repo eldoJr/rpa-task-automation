@@ -6,6 +6,8 @@ import StatusChart from "./StatusChart";
 import RecordTable from "./RecordTable";
 import AddAutomation from "./AddAutomation";
 import Integrations from "./Integrations";
+import Projects from "./Projects";
+import Analytics from "./Analytics";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -31,14 +33,16 @@ const Dashboard = () => {
         );
       case "record-table":
         return <RecordTable isSidebarCollapsed={isSidebarCollapsed} />;
-      case "analytics":
-        return <div>Analytics Content</div>;
-        case "integrations":
-          return <Integrations />;
+      case "integrations":
+        return <Integrations />;
       case "settings":
         return <div>Settings Content</div>;
       case "add-automation":
         return <AddAutomation />;
+      case "projects":
+        return <Projects />;
+      case "analytics":
+        return <Analytics />;
       default:
         return <div>Select a section</div>;
     }
