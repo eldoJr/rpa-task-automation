@@ -314,25 +314,31 @@ const Integrations: React.FC = () => {
       <div
         className={`${
           isMobileFilterOpen ? "block" : "hidden"
-        } md:block md:w-64 p-4 border-r border-gray-200 bg-white shadow-sm md:static fixed inset-0 z-50 overflow-y-auto`}
+        } md:block md:w-72 p-6 border-r border-gray-100 bg-white shadow-lg md:static fixed inset-0 z-50 overflow-y-auto transition-transform duration-300 ease-in-out transform ${
+          isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="font-semibold text-lg">Filters</h2>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="font-semibold text-xl text-gray-800">Filters</h2>
           <button
             onClick={toggleMobileFilters}
-            className="md:hidden text-gray-500 hover:text-gray-700"
+            className="md:hidden text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Close filters"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 
+        {/* Active Filters */}
         {selectedCategories.length > 0 && (
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
               <span className="text-sm text-gray-500">Active filters</span>
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                aria-label="Clear all filters"
               >
                 Clear all
               </button>
@@ -341,14 +347,15 @@ const Integrations: React.FC = () => {
               {selectedCategories.map((category) => (
                 <div
                   key={`filter-${category}`}
-                  className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs"
+                  className="inline-flex items-center bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 px-3 py-1.5 rounded-full text-xs shadow-sm"
                 >
                   {category}
                   <button
                     onClick={() => toggleCategory(category)}
-                    className="ml-1 text-blue-500 hover:text-blue-700"
+                    className="ml-1.5 text-blue-500 hover:text-blue-700 transition-colors"
+                    aria-label={`Remove ${category} filter`}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
@@ -356,21 +363,25 @@ const Integrations: React.FC = () => {
           </div>
         )}
 
-        <div className="mb-4">
-          <h3 className="font-medium text-sm mb-2 text-gray-700">Categories</h3>
-          <div className="max-h-96 overflow-y-auto pr-1">
+        {/* Categories */}
+        <div className="mb-6">
+          <h3 className="font-medium text-sm mb-3 text-gray-700">Categories</h3>
+          <div className="max-h-96 overflow-y-auto pr-2">
             {categories.map((category) => (
-              <div key={category} className="flex items-center py-1">
+              <div
+                key={category}
+                className="flex items-center py-1.5 hover:bg-gray-50 rounded-lg transition-colors"
+              >
                 <input
                   type="checkbox"
                   id={category}
                   checked={selectedCategories.includes(category)}
                   onChange={() => toggleCategory(category)}
-                  className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="mr-3 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <label
                   htmlFor={category}
-                  className="text-sm cursor-pointer hover:text-blue-600 transition-colors"
+                  className="text-sm text-gray-700 cursor-pointer hover:text-blue-600 transition-colors"
                 >
                   {category}
                 </label>
