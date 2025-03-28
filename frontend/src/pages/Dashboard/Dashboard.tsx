@@ -8,6 +8,7 @@ import AddAutomation from "./AddAutomation";
 import Integrations from "./Integrations";
 import Projects from "./Projects";
 import Analytics from "./Analytics";
+import Monitoring from "./Monitoring";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -43,6 +44,8 @@ const Dashboard = () => {
         return <Projects />;
       case "analytics":
         return <Analytics />;
+      case "monitoring":
+        return <Monitoring />;
       default:
         return <div>Select a section</div>;
     }
