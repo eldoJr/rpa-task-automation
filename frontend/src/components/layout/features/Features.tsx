@@ -1,4 +1,4 @@
-import Button from "@/components/ui/button/Button";
+import {Button} from "@/components/ui/button/Button";
 import { BarChart, Workflow, Code2, ShieldCheck, Users, RefreshCcw } from "lucide-react";
 import React from 'react';
 

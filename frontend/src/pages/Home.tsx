@@ -1,4 +1,4 @@
-/*
+
 import Navbar from "@/components/layout/navbar/navbar";
 import Header from "@/components/layout/header/Header";
 import About from "@/components/layout/about/About";
@@ -24,8 +24,8 @@ function App() {
 }
 
 export default App;
-*/
 
+/*
 import Dashboard from "./Dashboard/Dashboard";
 
 function App() {
@@ -37,3 +37,4 @@ function App() {
 }
 
 export default App;
+*/

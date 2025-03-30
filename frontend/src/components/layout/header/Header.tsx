@@ -1,4 +1,4 @@
-import Button from "@/components/ui/button/Button";
+import {Button} from "@/components/ui/button/Button";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {

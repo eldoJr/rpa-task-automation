@@ -1,4 +1,4 @@
-import Button from "@/components/ui/button/Button";
+import {Button} from "@/components/ui/button/Button";
 import { Settings, Users, TrendingUp } from "lucide-react";
 import React from 'react';
 
