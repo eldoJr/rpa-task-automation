@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Search,
   HelpCircle,
   Bell,
   User,
@@ -21,7 +20,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -77,21 +75,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="w-8 h-8 transition-all duration-300"
           />
         )}
-      </div>
-
-      <div
-        className={`relative w-full max-w-md hidden md:block transition-all ${
-          searchFocused ? "ring-2 ring-blue-500/30 rounded-full" : ""
-        }`}
-      >
-        <input
-          type="text"
-          placeholder="Search automations, projects, logs..."
-          className="w-full p-2 pl-10 rounded-full bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue-400 transition-all"
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
-        />
-        <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
       </div>
 
       <div className="flex items-center space-x-1 sm:space-x-3">

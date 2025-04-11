@@ -12,6 +12,8 @@ import Monitoring from "./Monitoring";
 import Templates from "./Templates";
 import LogsHistory from "./LogsHistory";
 import Reports from "./Reports";
+import Settings from "./Settings";
+import ChatBot from "./ChatBot";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -39,8 +41,6 @@ const Dashboard = () => {
         return <RecordTable isSidebarCollapsed={isSidebarCollapsed} />;
       case "integrations":
         return <Integrations />;
-      case "settings":
-        return <div>Settings Content</div>;
       case "add-automation":
         return <AddAutomation />;
       case "projects":
@@ -54,7 +54,11 @@ const Dashboard = () => {
       case "logs":
         return <LogsHistory />;
       case "reports":
-        return <Reports/>
+        return <Reports />;
+      case "settings":
+        return <Settings />;
+      case "chatBot":
+        return <ChatBot/>;
       default:
         return <div>Select a section</div>;
     }

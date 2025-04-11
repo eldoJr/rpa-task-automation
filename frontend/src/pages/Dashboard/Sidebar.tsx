@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <div className="p-4 border-t border-gray-700">
         <button
-          onClick={() => setActiveSection("ai-suggestions")}
+          onClick={() => setActiveSection("chatBot")}
           className={`flex items-center w-full p-2 rounded-lg transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-700 ${
             isCollapsed ? "justify-center" : "justify-start space-x-3"
           }`}
