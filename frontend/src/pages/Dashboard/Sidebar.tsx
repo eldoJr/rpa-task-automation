@@ -16,8 +16,22 @@ import {
 } from "lucide-react";
 import logo from "@/assets/icons/logo.svg";
 
+type DashboardSection =
+  | "home"
+  | "integrations"
+  | "add-automation"
+  | "projects"
+  | "analytics"
+  | "monitoring"
+  | "templates"
+  | "logs"
+  | "reports"
+  | "settings"
+  | "chatBot";
+
 interface SidebarProps {
-  setActiveSection: (section: string) => void;
+  activeSection?: DashboardSection;
+  setActiveSection: (section: DashboardSection) => void;
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
 }
@@ -25,11 +39,12 @@ interface SidebarProps {
 interface NavItem {
   icon: React.ReactNode;
   label: string;
-  section: string;
+  section: DashboardSection;
   action?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
+  activeSection,
   setActiveSection,
   isCollapsed,
   setIsCollapsed,
@@ -60,7 +75,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
     { icon: <FileText size={20} />, label: "Templates", section: "templates" },
     { icon: <Database size={20} />, label: "Logs & History", section: "logs" },
-
     { icon: <List size={20} />, label: "Reports", section: "reports" },
     { icon: <Settings size={20} />, label: "Settings", section: "settings" },
   ];
@@ -86,6 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="text-gray-300 hover:text-white focus:outline-none p-1 rounded-md hover:bg-gray-800 transition-colors"
           aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          aria-expanded={!isCollapsed}
         >
           {isCollapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
@@ -97,10 +112,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             <li key={item.section}>
               <button
                 onClick={() => handleNavItemClick(item)}
-                className={`flex items-center w-full p-2 rounded-lg transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-700 ${
+                className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+                  activeSection === item.section
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-gray-800 hover:text-gray-300"
+                } focus:outline-none focus:ring-2 focus:ring-gray-700 ${
                   isCollapsed ? "justify-center" : "justify-start space-x-3"
                 }`}
                 aria-label={item.label}
+                aria-current={
+                  activeSection === item.section ? "page" : undefined
+                }
               >
                 <div>{item.icon}</div>
                 {!isCollapsed && <span>{item.label}</span>}
@@ -113,10 +135,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={() => setActiveSection("chatBot")}
-          className={`flex items-center w-full p-2 rounded-lg transition-colors hover:bg-gray-800 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-700 ${
+          className={`flex items-center w-full p-2 rounded-lg transition-colors ${
+            activeSection === "chatBot"
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-800 hover:text-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-gray-700 ${
             isCollapsed ? "justify-center" : "justify-start space-x-3"
           }`}
           aria-label="AI Suggestions"
+          aria-current={activeSection === "chatBot" ? "page" : undefined}
         >
           <div>
             <MessageSquare size={20} />

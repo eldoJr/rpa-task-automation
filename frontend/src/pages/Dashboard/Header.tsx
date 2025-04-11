@@ -6,17 +6,20 @@ import {
   ChevronDown,
   Settings,
   LogOut,
+  Menu,
 } from "lucide-react";
 import logo from "@/assets/icons/logo.svg";
 
 interface DashboardHeaderProps {
   isSidebarCollapsed: boolean;
   username?: string;
+  onToggleSidebar: () => void;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   isSidebarCollapsed,
   username = "User",
+  onToggleSidebar,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -68,6 +71,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       border-b border-gray-200 backdrop-blur-md shadow-sm`}
     >
       <div className="flex items-center space-x-3">
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+          aria-label={
+            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+          }
+        >
+          <Menu size={20} className="text-gray-600" />
+        </button>
         {isSidebarCollapsed && (
           <img
             src={logo}
@@ -78,7 +90,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
 
       <div className="flex items-center space-x-1 sm:space-x-3">
-        <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <button
+          className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Help"
+        >
           <HelpCircle
             className="text-gray-500 hover:text-blue-500 transition-colors"
             size={20}
@@ -90,6 +105,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
             onClick={() => setShowNotifications(!showNotifications)}
             aria-label="Notifications"
+            aria-expanded={showNotifications}
           >
             <Bell
               className="text-gray-500 hover:text-blue-500 transition-colors"
@@ -148,6 +164,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
             onClick={() => setShowUserMenu(!showUserMenu)}
             aria-label="User menu"
+            aria-expanded={showUserMenu}
           >
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
               <User size={16} />

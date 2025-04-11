@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -191,9 +190,16 @@ const Templates: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", margin: -1.5 }}>
           {filteredTemplates.map((template) => (
-            <Grid item xs={12} sm={6} md={4} key={template.id}>
+            <Box
+              key={template.id}
+              sx={{
+                width: { xs: "100%", sm: "50%", md: "33.33%" },
+                padding: 1.5,
+                boxSizing: "border-box",
+              }}
+            >
               <Card
                 sx={{
                   height: "100%",
@@ -256,9 +262,9 @@ const Templates: React.FC = () => {
                   )}
                 </Box>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       <Dialog
