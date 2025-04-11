@@ -11,7 +11,6 @@ import {
   X,
   Clock,
   FileText,
-  Zap,
   Database,
   List,
 } from "lucide-react";
@@ -61,11 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
     { icon: <FileText size={20} />, label: "Templates", section: "templates" },
     { icon: <Database size={20} />, label: "Logs & History", section: "logs" },
-    {
-      icon: <Zap size={20} />,
-      label: "Event-Based",
-      section: "event-automation",
-    },
+
     { icon: <List size={20} />, label: "Reports", section: "reports" },
     { icon: <Settings size={20} />, label: "Settings", section: "settings" },
   ];
