@@ -86,9 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Sidebar"
     >
       <div className="p-4 flex items-center justify-between">
-        {!isCollapsed && (
-          <img src={logo} alt="Logo" className="h-8" />
-        )}
+        {!isCollapsed && <img src={logo} alt="Logo" className="h-8" />}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="text-gray-300 hover:text-white focus:outline-none p-1 rounded-md hover:bg-gray-800 transition-colors"
