@@ -10,6 +10,7 @@ import Projects from "./Projects";
 import Analytics from "./Analytics";
 import Monitoring from "./Monitoring";
 import Templates from "./Templates";
+import LogsHistory from "./LogsHistory";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -49,6 +50,8 @@ const Dashboard = () => {
         return <Monitoring />;
       case "templates":
         return <Templates />;
+      case "logs":
+        return <LogsHistory />;
       default:
         return <div>Select a section</div>;
     }
