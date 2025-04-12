@@ -1,29 +1,33 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Box,
+  Button,
   Card,
   CardHeader,
-  CardTitle,
   CardContent,
-  CardFooter,
-} from "@/components/ui/card/card";
-import { Button } from "@/components/ui/button/Button";
-import { Badge } from "@/components/ui/badge/badge";
-import { 
-  PlusIcon, 
-  PlayIcon, 
-  PauseIcon, 
-  CheckCircleIcon, 
-  EyeIcon, 
-  EditIcon 
-} from "lucide-react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription 
-} from "@/components/ui/dialog/dialog";
+  CardActions,
+  Typography,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Grid,
+  Avatar,
+  Divider,
+  IconButton,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  PlayArrow as ActiveIcon,
+  Pause as PausedIcon,
+  CheckCircle as CompletedIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  MoreVert as MoreIcon,
+} from "@mui/icons-material";
 
 interface Project {
   id: string;
@@ -41,7 +45,8 @@ const Projects: React.FC = () => {
     {
       id: "1",
       name: "Financial Reporting Automation",
-      description: "Automate monthly financial report generation and data extraction",
+      description:
+        "Automate monthly financial report generation and data extraction",
       status: "active",
       automations: 5,
       department: "Finance",
@@ -71,22 +76,23 @@ const Projects: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const getStatusIcon = (status: Project["status"]) => {
+    const iconProps = { fontSize: "small", sx: { mr: 0.5 } };
     switch (status) {
       case "active":
-        return <PlayIcon className="text-green-500 w-5 h-5" />;
+        return <ActiveIcon color="success" {...iconProps} />;
       case "completed":
-        return <CheckCircleIcon className="text-blue-500 w-5 h-5" />;
+        return <CompletedIcon color="primary" {...iconProps} />;
       case "paused":
-        return <PauseIcon className="text-yellow-500 w-5 h-5" />;
+        return <PausedIcon color="warning" {...iconProps} />;
     }
   };
 
   const getDepartmentColor = (department: Project["department"]) => {
     const colors = {
-      Finance: "bg-blue-100 text-blue-800",
-      Healthcare: "bg-green-100 text-green-800",
-      Logistics: "bg-purple-100 text-purple-800",
-      "Customer Support": "bg-orange-100 text-orange-800",
+      Finance: "primary",
+      Healthcare: "success",
+      Logistics: "secondary",
+      "Customer Support": "warning",
     };
     return colors[department];
   };
@@ -101,185 +107,241 @@ const Projects: React.FC = () => {
   };
 
   const handleEditWorkflow = (project: Project) => {
-    // TODO: Implement workflow editing 
-    // For now, navigate to add automation with project details
-    navigate("/dashboard/add-automation", { 
-      state: { 
-        editingProject: project 
-      } 
+    navigate("/dashboard/add-automation", {
+      state: { editingProject: project },
     });
   };
 
-  const handleStatusChange = (projectId: string, newStatus: Project["status"]) => {
-    setProjects(projects.map(project => 
-      project.id === projectId 
-        ? { ...project, status: newStatus }
-        : project
-    ));
+  const handleStatusChange = (
+    projectId: string,
+    newStatus: Project["status"]
+  ) => {
+    setProjects(
+      projects.map((project) =>
+        project.id === projectId ? { ...project, status: newStatus } : project
+      )
+    );
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+    <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Box>
+          <Typography variant="h4" component="h1" fontWeight="bold">
             Automation Projects
-          </h1>
-          <p className="text-gray-500 mt-2">
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
             Create, manage, and monitor your RPA workflows
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <Button
+          variant="contained"
+          startIcon={<AddIcon />}
           onClick={handleCreateProject}
-          className="flex items-center gap-2"
+          sx={{ height: 40 }}
         >
-          <PlusIcon className="w-5 h-5" />
           Create New Project
         </Button>
-      </div>
+      </Box>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <Grid container spacing={3}>
         {projects.map((project) => (
-          <Card
-            key={project.id}
-            className="flex flex-col hover:shadow-xl transition-all duration-300 border-gray-200"
-          >
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="text-xl font-semibold text-gray-700">
-                {project.name}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(project.status)}
-                <Badge
-                  className={`${getDepartmentColor(
-                    project.department
-                  )} px-2 py-1 rounded-full text-xs`}
-                >
-                  {project.department}
-                </Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent className="flex-grow">
-              <p className="text-gray-600 mb-4">{project.description}</p>
-
-              <div className="flex justify-between items-center text-sm text-gray-500">
-                <div>
-                  <p>Automations: {project.automations}</p>
-                  <p>Last Updated: {project.lastUpdated}</p>
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex justify-between items-center border-t pt-4">
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleViewDetails(project)}
-                >
-                  <EyeIcon className="mr-2 w-4 h-4" />
-                  View Details
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleEditWorkflow(project)}
-                >
-                  <EditIcon className="mr-2 w-4 h-4" />
-                  Edit Workflow
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      {projects.length === 0 && (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-            No Automation Projects Yet
-          </h2>
-          <p className="text-gray-500 mb-6">
-            Start streamlining your workflows by creating your first RPA project
-          </p>
-          <Button
-            onClick={handleCreateProject}
-            className="flex items-center gap-2 mx-auto"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Create First Project
-          </Button>
-        </div>
-      )}
-
-      {/* Project Details Modal */}
-      <Dialog 
-        open={isDetailsModalOpen} 
-        onOpenChange={setIsDetailsModalOpen}
-      >
-        <DialogContent>
-          {selectedProject && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{selectedProject.name}</DialogTitle>
-                <DialogDescription>
-                  {selectedProject.description}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(selectedProject.status)}
-                    {selectedProject.status}
-                  </div>
-                </div>
-                <div className="flex justify-between">
-                  <span>Department:</span>
-                  <Badge 
-                    className={getDepartmentColor(selectedProject.department)}
-                  >
-                    {selectedProject.department}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Automations:</span>
-                  <span>{selectedProject.automations}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Last Updated:</span>
-                  <span>{selectedProject.lastUpdated}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 mt-4">
-                {selectedProject.status !== "completed" && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      handleStatusChange(selectedProject.id, "completed");
-                      setIsDetailsModalOpen(false);
+          <Grid item xs={12} sm={6} md={4} key={project.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "box-shadow 0.3s ease",
+                "&:hover": { boxShadow: 6 },
+              }}
+            >
+              <CardHeader
+                avatar={
+                  <Avatar
+                    sx={{
+                      bgcolor: `${getDepartmentColor(
+                        project.department
+                      )}.light`,
                     }}
                   >
-                    Mark as Completed
-                  </Button>
-                )}
-                <Button 
+                    {project.name.charAt(0)}
+                  </Avatar>
+                }
+                action={
+                  <IconButton aria-label="settings">
+                    <MoreIcon />
+                  </IconButton>
+                }
+                title={
+                  <Typography variant="h6" component="div">
+                    {project.name}
+                  </Typography>
+                }
+                subheader={
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
+                    {getStatusIcon(project.status)}
+                    <Chip
+                      label={project.status}
+                      size="small"
+                      sx={{ ml: 1, textTransform: "capitalize" }}
+                    />
+                  </Box>
+                }
+              />
+
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {project.description}
+                </Typography>
+
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Chip
+                    label={project.department}
+                    color={getDepartmentColor(project.department)}
+                    size="small"
+                  />
+                  <Box sx={{ textAlign: "right" }}>
+                    <Typography variant="caption" display="block">
+                      {project.automations} automations
+                    </Typography>
+                    <Typography variant="caption" display="block">
+                      Updated: {project.lastUpdated}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+
+              <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
+                <Button
+                  size="small"
+                  startIcon={<ViewIcon />}
+                  onClick={() => handleViewDetails(project)}
+                >
+                  Details
+                </Button>
+                <Button
+                  size="small"
+                  startIcon={<EditIcon />}
+                  onClick={() => handleEditWorkflow(project)}
+                >
+                  Edit
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {projects.length === 0 && (
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 8,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            mt: 4,
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            No Automation Projects Yet
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Start streamlining your workflows by creating your first RPA project
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateProject}
+            sx={{ mt: 2 }}
+          >
+            Create First Project
+          </Button>
+        </Box>
+      )}
+
+      {/* Project Details Dialog */}
+      <Dialog
+        open={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        {selectedProject && (
+          <>
+            <DialogTitle>{selectedProject.name}</DialogTitle>
+            <DialogContent>
+              <DialogContentText paragraph>
+                {selectedProject.description}
+              </DialogContentText>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box
+                sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}
+              >
+                <Typography variant="body2">Status:</Typography>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {getStatusIcon(selectedProject.status)}
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: 1, textTransform: "capitalize" }}
+                  >
+                    {selectedProject.status}
+                  </Typography>
+                </Box>
+
+                <Typography variant="body2">Department:</Typography>
+                <Chip
+                  label={selectedProject.department}
+                  color={getDepartmentColor(selectedProject.department)}
+                  size="small"
+                />
+
+                <Typography variant="body2">Automations:</Typography>
+                <Typography variant="body2">
+                  {selectedProject.automations}
+                </Typography>
+
+                <Typography variant="body2">Last Updated:</Typography>
+                <Typography variant="body2">
+                  {selectedProject.lastUpdated}
+                </Typography>
+              </Box>
+            </DialogContent>
+
+            <DialogActions>
+              {selectedProject.status !== "completed" && (
+                <Button
                   onClick={() => {
-                    handleEditWorkflow(selectedProject);
+                    handleStatusChange(selectedProject.id, "completed");
                     setIsDetailsModalOpen(false);
                   }}
                 >
-                  Edit Workflow
+                  Mark as Completed
                 </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
+              )}
+              <Button
+                variant="contained"
+                onClick={() => {
+                  handleEditWorkflow(selectedProject);
+                  setIsDetailsModalOpen(false);
+                }}
+              >
+                Edit Workflow
+              </Button>
+            </DialogActions>
+          </>
+        )}
       </Dialog>
-    </div>
+    </Box>
   );
 };
 

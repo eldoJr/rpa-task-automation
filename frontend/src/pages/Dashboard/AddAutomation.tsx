@@ -621,7 +621,10 @@ const useAIAssistant = (state: AutomationState) => {
       });
     }
 
-    if (steps.length > 1 && !steps.some((step) => step.type === "notification")) {
+    if (
+      steps.length > 1 &&
+      !steps.some((step) => step.type === "notification")
+    ) {
       suggestions.push({
         text: "Consider adding a notification step to alert users about the workflow results.",
       });
@@ -768,9 +771,7 @@ const ExcelStepConfig: React.FC<{
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Switch
           checked={config.headerRow || false}
-          onChange={(e) =>
-            onUpdate({ ...config, headerRow: e.target.checked })
-          }
+          onChange={(e) => onUpdate({ ...config, headerRow: e.target.checked })}
         />
         <Typography variant="body2">First row contains headers</Typography>
       </Box>
@@ -922,14 +923,27 @@ const AddAutomation: React.FC = () => {
           />
         );
       default:
-        return <Typography>Configuration not available for this step type.</Typography>;
+        return (
+          <Typography>
+            Configuration not available for this step type.
+          </Typography>
+        );
     }
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", bgcolor: "background.default" }}>
+    <Box
+      sx={{ display: "flex", height: "100vh", bgcolor: "background.default" }}
+    >
       {/* Left Sidebar - Components */}
-      <Paper sx={{ width: 280, display: "flex", flexDirection: "column", borderRadius: 0 }}>
+      <Paper
+        sx={{
+          width: 280,
+          display: "flex",
+          flexDirection: "column",
+          borderRadius: 0,
+        }}
+      >
         <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
           <Typography variant="h6" gutterBottom>
             Automation Components
@@ -976,7 +990,9 @@ const AddAutomation: React.FC = () => {
                 }}
               >
                 <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
+                  <Avatar
+                    sx={{ bgcolor: "primary.main", width: 32, height: 32 }}
+                  >
                     {step.icon}
                   </Avatar>
                 </ListItemAvatar>
@@ -992,13 +1008,33 @@ const AddAutomation: React.FC = () => {
       </Paper>
 
       {/* Main Content Area */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
         {/* Header */}
-        <Paper square elevation={0} sx={{ p: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Paper
+          square
+          elevation={0}
+          sx={{
+            p: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Button
-              startIcon={viewMode === "flowchart" ? <ListViewIcon /> : <FlowchartIcon />}
-              onClick={() => setViewMode(viewMode === "flowchart" ? "list" : "flowchart")}
+              startIcon={
+                viewMode === "flowchart" ? <ListViewIcon /> : <FlowchartIcon />
+              }
+              onClick={() =>
+                setViewMode(viewMode === "flowchart" ? "list" : "flowchart")
+              }
               size="small"
             >
               {viewMode === "flowchart" ? "List View" : "Flowchart View"}
@@ -1050,15 +1086,34 @@ const AddAutomation: React.FC = () => {
 
         {/* Workflow Area */}
         <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             {/* Workflow Header */}
-            <Paper square elevation={0} sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <Paper
+              square
+              elevation={0}
+              sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
                 <Box sx={{ flex: 1 }}>
                   <TextField
                     placeholder="Automation Name"
                     value={state.name}
-                    onChange={(e) => dispatch({ type: "SET_NAME", payload: e.target.value })}
+                    onChange={(e) =>
+                      dispatch({ type: "SET_NAME", payload: e.target.value })
+                    }
                     fullWidth
                     variant="standard"
                     InputProps={{
@@ -1070,7 +1125,10 @@ const AddAutomation: React.FC = () => {
                     placeholder="Description (what does this automation do?)"
                     value={state.description}
                     onChange={(e) =>
-                      dispatch({ type: "SET_DESCRIPTION", payload: e.target.value })
+                      dispatch({
+                        type: "SET_DESCRIPTION",
+                        payload: e.target.value,
+                      })
                     }
                     fullWidth
                     variant="standard"
@@ -1094,7 +1152,8 @@ const AddAutomation: React.FC = () => {
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         {getTriggerIcon(selected)}
                         <Typography sx={{ ml: 1 }}>
-                          Trigger: {TRIGGER_TYPES.find((t) => t.id === selected)?.name}
+                          Trigger:{" "}
+                          {TRIGGER_TYPES.find((t) => t.id === selected)?.name}
                         </Typography>
                       </Box>
                     )}
@@ -1105,7 +1164,10 @@ const AddAutomation: React.FC = () => {
                           {trigger.icon}
                           <Box sx={{ ml: 2 }}>
                             <Typography>{trigger.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {trigger.description}
                             </Typography>
                           </Box>
@@ -1156,7 +1218,14 @@ const AddAutomation: React.FC = () => {
             </Paper>
 
             {/* Workflow Content */}
-            <Box sx={{ flex: 1, overflow: "auto", p: 2, bgcolor: "background.paper" }}>
+            <Box
+              sx={{
+                flex: 1,
+                overflow: "auto",
+                p: 2,
+                bgcolor: "background.paper",
+              }}
+            >
               {viewMode === "list" ? (
                 <DragDropContext onDragEnd={handleDragEnd}>
                   <Droppable droppableId="steps">
@@ -1164,7 +1233,11 @@ const AddAutomation: React.FC = () => {
                       <Box
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1,
+                        }}
                       >
                         {state.steps.length === 0 ? (
                           <Box
@@ -1185,7 +1258,11 @@ const AddAutomation: React.FC = () => {
                           </Box>
                         ) : (
                           state.steps.map((step, index) => (
-                            <Draggable key={step.id} draggableId={step.id} index={index}>
+                            <Draggable
+                              key={step.id}
+                              draggableId={step.id}
+                              index={index}
+                            >
                               {(provided) => (
                                 <Paper
                                   ref={provided.innerRef}
@@ -1194,7 +1271,9 @@ const AddAutomation: React.FC = () => {
                                   sx={{
                                     borderLeft: 4,
                                     borderColor:
-                                      activeStep === step.id ? "primary.main" : "divider",
+                                      activeStep === step.id
+                                        ? "primary.main"
+                                        : "divider",
                                     position: "relative",
                                   }}
                                 >
@@ -1212,12 +1291,17 @@ const AddAutomation: React.FC = () => {
                                     >
                                       <DragHandleIcon />
                                     </IconButton>
-                                    <Box sx={{ mr: 2 }}>{getStepIcon(step.type)}</Box>
+                                    <Box sx={{ mr: 2 }}>
+                                      {getStepIcon(step.type)}
+                                    </Box>
                                     <Box sx={{ flex: 1 }}>
                                       <Typography variant="subtitle2">
                                         {step.name}
                                       </Typography>
-                                      <Typography variant="caption" color="text.secondary">
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                      >
                                         {step.type}
                                       </Typography>
                                     </Box>
@@ -1228,7 +1312,11 @@ const AddAutomation: React.FC = () => {
                                       <IconButton
                                         size="small"
                                         onClick={() =>
-                                          setActiveStep(activeStep === step.id ? null : step.id)
+                                          setActiveStep(
+                                            activeStep === step.id
+                                              ? null
+                                              : step.id
+                                          )
                                         }
                                       >
                                         {activeStep === step.id ? (
@@ -1246,7 +1334,13 @@ const AddAutomation: React.FC = () => {
                                     </Box>
                                   </Box>
                                   {activeStep === step.id && (
-                                    <Box sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
+                                    <Box
+                                      sx={{
+                                        p: 2,
+                                        borderTop: 1,
+                                        borderColor: "divider",
+                                      }}
+                                    >
                                       {renderStepConfiguration(step)}
                                     </Box>
                                   )}
@@ -1273,7 +1367,9 @@ const AddAutomation: React.FC = () => {
                 >
                   <FlowchartIcon sx={{ fontSize: 48, mb: 2 }} />
                   <Typography>Flowchart view coming soon</Typography>
-                  <Typography variant="caption">Currently showing list view</Typography>
+                  <Typography variant="caption">
+                    Currently showing list view
+                  </Typography>
                 </Box>
               )}
             </Box>
@@ -1341,7 +1437,10 @@ const AddAutomation: React.FC = () => {
               justifyContent: "space-between",
             }}
           >
-            <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ display: "flex", alignItems: "center" }}
+            >
               <RobotIcon sx={{ mr: 1 }} /> AI Assistant
             </Typography>
             <IconButton size="small" onClick={() => setShowAIAssistant(false)}>
@@ -1392,7 +1491,10 @@ const AddAutomation: React.FC = () => {
       )}
 
       {/* Schedule Dialog */}
-      <Dialog open={showScheduleDialog} onClose={() => setShowScheduleDialog(false)}>
+      <Dialog
+        open={showScheduleDialog}
+        onClose={() => setShowScheduleDialog(false)}
+      >
         <DialogTitle>Schedule Settings</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -1456,7 +1558,9 @@ const AddAutomation: React.FC = () => {
                   {[0, 1, 2, 3, 4, 5, 6].map((day) => (
                     <Chip
                       key={day}
-                      label={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]}
+                      label={
+                        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]
+                      }
                       onClick={() => {
                         const currentDays = state.schedule?.daysOfWeek || [];
                         const newDays = currentDays.includes(day)

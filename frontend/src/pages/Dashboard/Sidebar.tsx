@@ -6,7 +6,6 @@ import {
   Folder,
   BarChart2,
   Settings,
-  MessageSquare,
   Menu,
   X,
   Clock,
@@ -14,6 +13,7 @@ import {
   Database,
   List,
 } from "lucide-react";
+import { SmartToy } from "@mui/icons-material";
 import logo from "@/assets/icons/logo.svg";
 
 type DashboardSection =
@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           aria-current={activeSection === "chatBot" ? "page" : undefined}
         >
           <div>
-            <MessageSquare size={20} />
+            <SmartToy size={20} />
           </div>
           {!isCollapsed && <span>AI Suggestions</span>}
         </button>
