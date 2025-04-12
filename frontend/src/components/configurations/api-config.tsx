@@ -15,6 +15,13 @@ interface APIConfigProps {
   onUpdate: (config: APIConfig) => void;
 }
 
+onUpdate({
+    ...config,
+    authentication: {
+      type: type as "basic" | "oauth" | "apiKey",
+      credentials: {} as Record<string, string> // Explicitly type the empty object
+    }
+  });
 export const APIConfigForm = ({ config, onUpdate }: APIConfigProps) => {
   const handleMethodChange = (method: string) => {
     onUpdate({ ...config, method });
