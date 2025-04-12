@@ -13,6 +13,7 @@ import {
   MenuItem,
   Switch,
   Chip,
+  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -26,8 +27,6 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Tabs,
-  Tab,
   InputAdornment,
 } from "@mui/material";
 import {
@@ -50,7 +49,6 @@ import {
   DragHandle as DragHandleIcon,
   ExpandMore as ExpandMoreIcon,
   ChevronRight as ChevronRightIcon,
-  ChevronLeft as ChevronLeftIcon,
   Undo as UndoIcon,
   Redo as RedoIcon,
   ViewList as ListViewIcon,
@@ -820,7 +818,7 @@ const AddAutomation: React.FC = () => {
   const [viewMode, setViewMode] = useState<"flowchart" | "list">("list");
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
-  const [activeTab, setActiveTab] = useState("steps");
+  //const [activeTab, setActiveTab] = useState("steps");
 
   const filteredSteps = useMemo(() => {
     return AVAILABLE_STEPS.filter((step) => {
@@ -1173,379 +1171,333 @@ const AddAutomation: React.FC = () => {
                             sx={{
                               display: "flex",
                               flexDirection: "column",
-                             alignItems: "center",
-              justifyContent: "center",
-              height: 200,
-              border: "2px dashed",
-              borderColor: "divider",
-              borderRadius: 2,
-              p: 3,
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Your automation is empty
-            </Typography>
-            <Typography color="text.secondary" paragraph>
-              Add components from the left panel to start building your workflow
-            </Typography>
-            <Button
-              startIcon={<AddCircleIcon />}
-              variant="contained"
-              color="primary"
-              onClick={() => setShowAIAssistant(true)}
-            >
-              Get AI Suggestions
-            </Button>
-          </Box>
-        ) : (
-          state.steps.map((step, index) => (
-            <Draggable key={step.id} draggableId={step.id} index={index}>
-              {(provided) => (
-                <Paper
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
+                              alignItems: "center",
+                              justifyContent: "center",
+                              height: "50vh",
+                              color: "text.secondary",
+                            }}
+                          >
+                            <HelpIcon sx={{ fontSize: 48, mb: 2 }} />
+                            <Typography>No steps added yet</Typography>
+                            <Typography variant="caption">
+                              Drag components from the left or choose a template
+                            </Typography>
+                          </Box>
+                        ) : (
+                          state.steps.map((step, index) => (
+                            <Draggable key={step.id} draggableId={step.id} index={index}>
+                              {(provided) => (
+                                <Paper
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  elevation={1}
+                                  sx={{
+                                    borderLeft: 4,
+                                    borderColor:
+                                      activeStep === step.id ? "primary.main" : "divider",
+                                    position: "relative",
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 1,
+                                    }}
+                                  >
+                                    <IconButton
+                                      {...provided.dragHandleProps}
+                                      size="small"
+                                      sx={{ mr: 1 }}
+                                    >
+                                      <DragHandleIcon />
+                                    </IconButton>
+                                    <Box sx={{ mr: 2 }}>{getStepIcon(step.type)}</Box>
+                                    <Box sx={{ flex: 1 }}>
+                                      <Typography variant="subtitle2">
+                                        {step.name}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {step.type}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ mr: 2 }}>
+                                      {getStepStatusBadge(step.status)}
+                                    </Box>
+                                    <Box sx={{ display: "flex", gap: 0.5 }}>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                          setActiveStep(activeStep === step.id ? null : step.id)
+                                        }
+                                      >
+                                        {activeStep === step.id ? (
+                                          <ExpandMoreIcon />
+                                        ) : (
+                                          <ChevronRightIcon />
+                                        )}
+                                      </IconButton>
+                                      <IconButton
+                                        size="small"
+                                        onClick={() => removeStep(step.id)}
+                                      >
+                                        <DeleteIcon color="error" />
+                                      </IconButton>
+                                    </Box>
+                                  </Box>
+                                  {activeStep === step.id && (
+                                    <Box sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
+                                      {renderStepConfiguration(step)}
+                                    </Box>
+                                  )}
+                                </Paper>
+                              )}
+                            </Draggable>
+                          ))
+                        )}
+                        {provided.placeholder}
+                      </Box>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              ) : (
+                <Box
                   sx={{
-                    p: 2,
-                    mb: 2,
-                    borderLeft: 4,
-                    borderColor: "primary.main",
-                    boxShadow: activeStep === step.id ? 3 : 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    color: "text.secondary",
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Box {...provided.dragHandleProps} sx={{ mr: 1 }}>
-                      <DragHandleIcon />
-                    </Box>
-                    <Avatar sx={{ bgcolor: "primary.main", mr: 2 }}>
-                      {getStepIcon(step.type)}
-                    </Avatar>
-                    <Box sx={{ flex: 1 }}>
-                      <TextField
-                        value={step.name}
-                        onChange={(e) =>
-                          updateStep(step.id, { name: e.target.value })
-                        }
-                        variant="standard"
-                        InputProps={{
-                          disableUnderline: true,
-                          style: { fontWeight: "bold" },
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {
-                          AVAILABLE_STEPS.find((s) => s.id === step.type)
-                            ?.description
-                        }
-                      </Typography>
-                    </Box>
-                    {getStepStatusBadge(step.status)}
-                    <Box sx={{ ml: 1, display: "flex", gap: 0.5 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setActiveStep(activeStep === step.id ? null : step.id)
-                        }
-                      >
-                        {activeStep === step.id ? (
-                          <ChevronRightIcon />
-                        ) : (
-                          <ChevronLeftIcon />
-                        )}
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => removeStep(step.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  {activeStep === step.id && (
-                    <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "divider" }}>
-                      {renderStepConfiguration(step)}
-                    </Box>
-                  )}
-                </Paper>
+                  <FlowchartIcon sx={{ fontSize: 48, mb: 2 }} />
+                  <Typography>Flowchart view coming soon</Typography>
+                  <Typography variant="caption">Currently showing list view</Typography>
+                </Box>
               )}
-            </Draggable>
-          ))
-        )}
-        {provided.placeholder}
-      </Box>
-    )}
-  </Droppable>
-</DragDropContext>
-                ) : (
-                  // Flowchart View
-                  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                    {state.steps.length === 0 ? (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          height: 200,
-                          border: "2px dashed",
-                          borderColor: "divider",
-                          borderRadius: 2,
-                          p: 3,
-                          textAlign: "center",
-                        }}
-                      >
-                        <Typography variant="h6" color="text.secondary" gutterBottom>
-                          Your automation is empty
-                        </Typography>
-                        <Typography color="text.secondary" paragraph>
-                          Add components from the left panel to start building your workflow
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <>
-                        <Paper
-                          sx={{
-                            p: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            borderRadius: "50px",
-                            width: "fit-content",
-                            border: "2px solid",
-                            borderColor: "primary.main",
-                          }}
-                        >
-                          <Avatar sx={{ bgcolor: "primary.main", mr: 1 }}>
-                            {getTriggerIcon(state.trigger)}
-                          </Avatar>
-                          <Typography fontWeight="bold">
-                            {TRIGGER_TYPES.find((t) => t.id === state.trigger)?.name} Trigger
-                          </Typography>
-                        </Paper>
-                        {state.steps.map((step, index) => (
-                          <React.Fragment key={step.id}>
-                            <Box sx={{ height: 30, border: "1px dashed", borderColor: "grey.400", width: 2 }} />
-                            <Paper
-                              sx={{
-                                p: 2,
-                                display: "flex",
-                                alignItems: "center",
-                                flexDirection: "column",
-                                width: 300,
-                                cursor: "pointer",
-                                borderLeft: 4,
-                                borderColor: "primary.main",
-                                boxShadow: activeStep === step.id ? 3 : 1,
-                                "&:hover": { boxShadow: 3 },
-                              }}
-                              onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
-                            >
-                              <Box sx={{ display: "flex", alignItems: "center", width: "100%", mb: 1 }}>
-                                <Avatar sx={{ bgcolor: "primary.main", mr: 1 }}>
-                                  {getStepIcon(step.type)}
-                                </Avatar>
-                                <Typography fontWeight="bold">{step.name}</Typography>
-                                {getStepStatusIcon(step.status)}
-                              </Box>
-                              {activeStep === step.id && (
-                                <Box sx={{ width: "100%", mt: 1, pt: 1, borderTop: 1, borderColor: "divider" }}>
-                                  {renderStepConfiguration(step)}
-                                </Box>
-                              )}
-                            </Paper>
-                          </React.Fragment>
-                        ))}
-                      </>
-                    )}
-                  </Box>
-                )}
-              </Box>
             </Box>
           </Box>
 
-          {/* Right Sidebar - AI Assistant */}
-          {showAIAssistant && (
+          {/* Configuration Panel */}
+          {activeStep && (
             <Paper
               sx={{
                 width: 320,
                 display: "flex",
                 flexDirection: "column",
-                borderRadius: 0,
                 borderLeft: 1,
                 borderColor: "divider",
               }}
             >
               <Box
                 sx={{
-                  p: 2,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  p: 1,
                   borderBottom: 1,
                   borderColor: "divider",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar sx={{ bgcolor: "primary.main", mr: 1 }}>
-                    <RobotIcon />
-                  </Avatar>
-                  <Typography variant="h6">AI Assistant</Typography>
-                </Box>
-                <IconButton onClick={() => setShowAIAssistant(false)}>
-                  <CloseIcon />
+                <Typography variant="subtitle1">Step Configuration</Typography>
+                <IconButton size="small" onClick={() => setActiveStep(null)}>
+                  <ChevronRightIcon />
                 </IconButton>
               </Box>
-
-              <Tabs
-                value={activeTab}
-                onChange={(_, newValue) => setActiveTab(newValue)}
-                sx={{ borderBottom: 1, borderColor: "divider" }}
-              >
-                <Tab label="Suggestions" value="steps" />
-                <Tab label="Optimization" value="optimization" />
-              </Tabs>
-
               <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
-                {activeTab === "steps" ? (
-                  getSuggestions().map((suggestion, index) => (
-                    <Paper
-                      key={index}
-                      sx={{
-                        p: 2,
-                        mb: 2,
-                        borderLeft: 3,
-                        borderColor: "primary.main",
-                      }}
-                    >
-                      <Typography variant="body2" paragraph>
-                        {suggestion.text}
-                      </Typography>
-                      {suggestion.actionLabel && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={suggestion.action}
-                        >
-                          {suggestion.actionLabel}
-                        </Button>
-                      )}
-                    </Paper>
-                  ))
-                ) : (
-                  getOptimizationTips().map((tip, index) => (
-                    <Paper
-                      key={index}
-                      sx={{
-                        p: 2,
-                        mb: 2,
-                        borderLeft: 3,
-                        borderColor: "warning.main",
-                      }}
-                    >
-                      <Typography variant="body2">{tip.text}</Typography>
-                    </Paper>
-                  ))
-                )}
+                {state.steps.map((step) => {
+                  if (step.id === activeStep) {
+                    return (
+                      <Box key={step.id}>{renderStepConfiguration(step)}</Box>
+                    );
+                  }
+                  return null;
+                })}
               </Box>
             </Paper>
           )}
         </Box>
       </Box>
 
+      {/* AI Assistant Panel */}
+      {showAIAssistant && (
+        <Paper
+          sx={{
+            width: 320,
+            display: "flex",
+            flexDirection: "column",
+            borderLeft: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Box
+            sx={{
+              p: 1,
+              borderBottom: 1,
+              borderColor: "divider",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+              <RobotIcon sx={{ mr: 1 }} /> AI Assistant
+            </Typography>
+            <IconButton size="small" onClick={() => setShowAIAssistant(false)}>
+              <ChevronRightIcon />
+            </IconButton>
+          </Box>
+          <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Suggestions
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {getSuggestions().map((suggestion, index) => (
+                  <Paper key={index} sx={{ p: 1.5 }}>
+                    <Typography variant="body2">{suggestion.text}</Typography>
+                    {suggestion.actionLabel && (
+                      <Button size="small" sx={{ mt: 0.5 }}>
+                        {suggestion.actionLabel}
+                      </Button>
+                    )}
+                  </Paper>
+                ))}
+              </Box>
+            </Box>
+            <Divider />
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Optimization Tips
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {getOptimizationTips().length > 0 ? (
+                  getOptimizationTips().map((tip, index) => (
+                    <Paper key={index} sx={{ p: 1.5, bgcolor: "info.light" }}>
+                      <Typography variant="body2">{tip.text}</Typography>
+                    </Paper>
+                  ))
+                ) : (
+                  <Paper sx={{ p: 1.5 }}>
+                    <Typography variant="body2">
+                      Your workflow looks optimized!
+                    </Typography>
+                  </Paper>
+                )}
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
       {/* Schedule Dialog */}
       <Dialog open={showScheduleDialog} onClose={() => setShowScheduleDialog(false)}>
-        <DialogTitle>Configure Schedule</DialogTitle>
+        <DialogTitle>Schedule Settings</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 400, pt: 1 }}>
-            <Select
-              value={state.schedule?.frequency || "daily"}
-              onChange={(e) =>
-                dispatch({
-                  type: "SET_SCHEDULE",
-                  payload: {
-                    ...state.schedule,
-                    frequency: e.target.value as any,
-                  },
-                })
-              }
-              fullWidth
-            >
-              <MenuItem value="once">Once</MenuItem>
-              <MenuItem value="hourly">Hourly</MenuItem>
-              <MenuItem value="daily">Daily</MenuItem>
-              <MenuItem value="weekly">Weekly</MenuItem>
-              <MenuItem value="monthly">Monthly</MenuItem>
-            </Select>
-
-            {(state.schedule?.frequency === "once" ||
-              state.schedule?.frequency === "daily") && (
-              <TextField
-                label="Time"
-                type="time"
-                value={state.schedule?.time || "09:00"}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_SCHEDULE",
-                    payload: { ...state.schedule, time: e.target.value },
-                  })
-                }
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-              />
-            )}
-
-            {state.schedule?.frequency === "weekly" && (
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  Days of Week
-                </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                    (day, i) => (
-                      <Chip
-                        key={day}
-                        label={day}
-                        onClick={() => {
-                          const days = state.schedule?.daysOfWeek || [];
-                          const newDays = days.includes(i)
-                            ? days.filter((d) => d !== i)
-                            : [...days, i];
-                          dispatch({
-                            type: "SET_SCHEDULE",
-                            payload: {
-                              ...state.schedule,
-                              daysOfWeek: newDays,
-                            },
-                          });
-                        }}
-                        color={
-                          state.schedule?.daysOfWeek?.includes(i)
-                            ? "primary"
-                            : "default"
-                        }
-                      />
-                    )
-                  )}
-                </Box>
-              </Box>
-            )}
-
-            {state.schedule?.frequency === "monthly" && (
-              <TextField
-                label="Day of Month"
-                type="number"
-                InputProps={{ inputProps: { min: 1, max: 31 } }}
-                value={state.schedule?.dayOfMonth || 1}
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Configure when this automation should run automatically.
+          </Typography>
+          <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box>
+              <Typography variant="body2" gutterBottom>
+                Frequency
+              </Typography>
+              <Select
+                value={state.schedule?.frequency || "daily"}
                 onChange={(e) =>
                   dispatch({
                     type: "SET_SCHEDULE",
                     payload: {
                       ...state.schedule,
-                      dayOfMonth: Number(e.target.value),
+                      frequency: e.target.value as
+                        | "once"
+                        | "hourly"
+                        | "daily"
+                        | "weekly"
+                        | "monthly",
                     },
                   })
                 }
                 fullWidth
-              />
+              >
+                <MenuItem value="once">Run Once</MenuItem>
+                <MenuItem value="hourly">Hourly</MenuItem>
+                <MenuItem value="daily">Daily</MenuItem>
+                <MenuItem value="weekly">Weekly</MenuItem>
+                <MenuItem value="monthly">Monthly</MenuItem>
+              </Select>
+            </Box>
+            {state.schedule?.frequency !== "once" &&
+              state.schedule?.frequency !== "hourly" && (
+                <Box>
+                  <Typography variant="body2" gutterBottom>
+                    Time
+                  </Typography>
+                  <TextField
+                    type="time"
+                    value={state.schedule?.time || "09:00"}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "SET_SCHEDULE",
+                        payload: { ...state.schedule, time: e.target.value },
+                      })
+                    }
+                    fullWidth
+                  />
+                </Box>
+              )}
+            {state.schedule?.frequency === "weekly" && (
+              <Box>
+                <Typography variant="body2" gutterBottom>
+                  Days of Week
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {[0, 1, 2, 3, 4, 5, 6].map((day) => (
+                    <Chip
+                      key={day}
+                      label={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]}
+                      onClick={() => {
+                        const currentDays = state.schedule?.daysOfWeek || [];
+                        const newDays = currentDays.includes(day)
+                          ? currentDays.filter((d) => d !== day)
+                          : [...currentDays, day];
+                        dispatch({
+                          type: "SET_SCHEDULE",
+                          payload: { ...state.schedule, daysOfWeek: newDays },
+                        });
+                      }}
+                      color={
+                        state.schedule?.daysOfWeek?.includes(day)
+                          ? "primary"
+                          : "default"
+                      }
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+            {state.schedule?.frequency === "monthly" && (
+              <Box>
+                <Typography variant="body2" gutterBottom>
+                  Day of Month
+                </Typography>
+                <TextField
+                  type="number"
+                  inputProps={{ min: 1, max: 31 }}
+                  value={state.schedule?.dayOfMonth || 1}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_SCHEDULE",
+                      payload: {
+                        ...state.schedule,
+                        dayOfMonth: parseInt(e.target.value),
+                      },
+                    })
+                  }
+                  fullWidth
+                />
+              </Box>
             )}
           </Box>
         </DialogContent>
