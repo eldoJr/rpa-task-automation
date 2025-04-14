@@ -9,7 +9,7 @@ const StatusChart = lazy(() => import("./StatusChart"));
 const RecordTable = lazy(() => import("./RecordTable"));
 const AddAutomation = lazy(() => import("./AddAutomation"));
 const Integrations = lazy(() => import("./Integrations"));
-const Projects = lazy(() => import("./Projects"));
+const Projects = lazy(() => import("./projects/Projects"));
 const Analytics = lazy(() => import("./Analytics"));
 const Monitoring = lazy(() => import("./Monitoring"));
 const Templates = lazy(() => import("./Templates"));

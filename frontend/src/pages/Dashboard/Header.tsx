@@ -6,27 +6,23 @@ import {
   ChevronDown,
   Settings,
   LogOut,
-  Menu,
 } from "lucide-react";
 import logo from "@/assets/icons/logo.svg";
 
 interface DashboardHeaderProps {
   isSidebarCollapsed: boolean;
   username?: string;
-  onToggleSidebar: () => void;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   isSidebarCollapsed,
   username = "User",
-  onToggleSidebar,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -47,7 +43,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Mock notifications data
   const notifications = [
     {
       id: 1,
@@ -71,15 +66,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       border-b border-gray-200 backdrop-blur-md shadow-sm`}
     >
       <div className="flex items-center space-x-3">
-        <button
-          onClick={onToggleSidebar}
-          className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-          aria-label={
-            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-          }
-        >
-          <Menu size={20} className="text-gray-600" />
-        </button>
         {isSidebarCollapsed && (
           <img
             src={logo}
