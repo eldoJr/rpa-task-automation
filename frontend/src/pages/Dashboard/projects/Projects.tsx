@@ -1,130 +1,285 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
-  Card,
-  CardHeader,
-  CardContent,
-  CardActions,
   Typography,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Grid,
-  Avatar,
-  Divider,
+  Alert,
+  Snackbar,
+  Fade,
+  Menu,
+  MenuItem,
+  ListItemText,
+  Tooltip,
   IconButton,
+  Tab,
+  Tabs,
+  useTheme,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  PlayArrow as ActiveIcon,
-  Pause as PausedIcon,
-  CheckCircle as CompletedIcon,
-  Visibility as ViewIcon,
-  Edit as EditIcon,
-  MoreVert as MoreIcon,
+  Refresh as RefreshIcon,
+  Sort as SortIcon,
+  ViewList as ListViewIcon,
+  ViewModule as GridViewIcon,
 } from "@mui/icons-material";
 
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "completed" | "paused";
-  automations: number;
-  department: "Finance" | "Healthcare" | "Logistics" | "Customer Support";
-  lastUpdated: string;
+import { Project, StatusType } from "@/types/projects";
+import { ProjectProvider, useProjects } from "@/contexts/ProjectContext";
+import { ProjectCard } from "./ProjectCard";
+import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
+import { ProjectsFilter } from "./ProjectsFilter";
+import { ProjectCardSkeleton } from "./ProjectCardSkeleton";
+import { ProjectStats } from "./ProjectStats";
+import { filterProjects, sortProjects } from "@/utils/projectUtils";
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-const Projects: React.FC = () => {
-  const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      name: "Financial Reporting Automation",
-      description:
-        "Automate monthly financial report generation and data extraction",
-      status: "active",
-      automations: 5,
-      department: "Finance",
-      lastUpdated: "2024-03-25",
-    },
-    {
-      id: "2",
-      name: "Patient Intake Workflow",
-      description: "Streamline patient registration and data entry processes",
-      status: "paused",
-      automations: 3,
-      department: "Healthcare",
-      lastUpdated: "2024-03-20",
-    },
-    {
-      id: "3",
-      name: "Logistics Order Processing",
-      description: "Automate order tracking and shipping documentation",
-      status: "completed",
-      automations: 4,
-      department: "Logistics",
-      lastUpdated: "2024-03-22",
-    },
-  ]);
+const TabPanel: React.FC<TabPanelProps> = ({
+  children,
+  value,
+  index,
+  ...other
+}) => {
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`project-tabpanel-${index}`}
+      aria-labelledby={`project-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+};
 
+const ProjectsContent: React.FC = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const { state, dispatch, updateProjectStatus } = useProjects();
+  const { projects, loading, error } = state;
+
+  // State management
+  const [filters, setFilters] = useState({
+    status: [] as StatusType[],
+    department: [] as string[],
+    search: "",
+  });
+  const [sortConfig, setSortConfig] = useState({
+    field: "lastUpdated" as keyof Project,
+    order: "desc" as "asc" | "desc",
+  });
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [snackbarState, setSnackbarState] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error" | "info" | "warning",
+  });
+  const [lastChangedProject, setLastChangedProject] = useState<{
+    id: string;
+    prevStatus: StatusType;
+  } | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [tabValue, setTabValue] = useState(0);
+  const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
 
-  const getStatusIcon = (status: Project["status"]) => {
-    const iconProps = { fontSize: "small", sx: { mr: 0.5 } };
-    switch (status) {
-      case "active":
-        return <ActiveIcon color="success" {...iconProps} />;
-      case "completed":
-        return <CompletedIcon color="primary" {...iconProps} />;
-      case "paused":
-        return <PausedIcon color="warning" {...iconProps} />;
-    }
-  };
+  // Memoized project data
+  const { activeProjects, completedProjects, pausedProjects } = useMemo(
+    () => ({
+      activeProjects: projects.filter((p) => p.status === "active"),
+      completedProjects: projects.filter((p) => p.status === "completed"),
+      pausedProjects: projects.filter((p) => p.status === "paused"),
+    }),
+    [projects]
+  );
 
-  const getDepartmentColor = (department: Project["department"]) => {
-    const colors = {
-      Finance: "primary",
-      Healthcare: "success",
-      Logistics: "secondary",
-      "Customer Support": "warning",
-    };
-    return colors[department];
-  };
+  const filteredProjects = useMemo(() => {
+    const filtered = filterProjects(projects, filters);
+    return sortProjects(filtered, sortConfig.field, sortConfig.order);
+  }, [projects, filters, sortConfig]);
 
-  const handleCreateProject = () => {
+  // Handlers
+  const handleCreateProject = useCallback(() => {
     navigate("/dashboard/add-automation");
-  };
+  }, [navigate]);
 
-  const handleViewDetails = (project: Project) => {
+  const handleViewDetails = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsDetailsModalOpen(true);
-  };
+  }, []);
 
-  const handleEditWorkflow = (project: Project) => {
-    navigate("/dashboard/add-automation", {
-      state: { editingProject: project },
-    });
-  };
+  const handleEditWorkflow = useCallback(
+    (project: Project) => {
+      navigate("/dashboard/add-automation", {
+        state: { editingProject: project },
+      });
+    },
+    [navigate]
+  );
 
-  const handleStatusChange = (
-    projectId: string,
-    newStatus: Project["status"]
-  ) => {
-    setProjects(
-      projects.map((project) =>
-        project.id === projectId ? { ...project, status: newStatus } : project
-      )
-    );
-  };
+  const handleStatusChange = useCallback(
+    async (projectId: string, newStatus: StatusType) => {
+      try {
+        const projectToUpdate = projects.find((p) => p.id === projectId);
+        if (projectToUpdate) {
+          setLastChangedProject({
+            id: projectId,
+            prevStatus: projectToUpdate.status,
+          });
+          updateProjectStatus(projectId, newStatus);
+
+          setSnackbarState({
+            open: true,
+            message: `Project status changed to ${newStatus}`,
+            severity: "success",
+          });
+        }
+      } catch (err) {
+        if (lastChangedProject) {
+          updateProjectStatus(projectId, lastChangedProject.prevStatus);
+        }
+        setSnackbarState({
+          open: true,
+          message: "Failed to update project status",
+          severity: "error",
+        });
+      }
+    },
+    [projects, updateProjectStatus, lastChangedProject]
+  );
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      dispatch({ type: "SET_LOADING", payload: true });
+      const data = await projectService.getProjects();
+      dispatch({ type: "SET_PROJECTS", payload: data });
+      setSnackbarState({
+        open: true,
+        message: "Projects refreshed",
+        severity: "success",
+      });
+    } catch (err) {
+      dispatch({ type: "SET_ERROR", payload: "Failed to refresh projects" });
+      setSnackbarState({
+        open: true,
+        message: "Failed to refresh projects",
+        severity: "error",
+      });
+    }
+  }, [dispatch]);
+
+  const handleTabChange = useCallback(
+    (_event: React.SyntheticEvent, newValue: number) => {
+      setTabValue(newValue);
+      setFilters((prev) => ({
+        ...prev,
+        status:
+          newValue === 0
+            ? []
+            : newValue === 1
+            ? ["active"]
+            : newValue === 2
+            ? ["completed"]
+            : ["paused"],
+      }));
+    },
+    []
+  );
+
+  const handleUndoStatusChange = useCallback(() => {
+    if (lastChangedProject) {
+      updateProjectStatus(lastChangedProject.id, lastChangedProject.prevStatus);
+      setSnackbarState({
+        open: true,
+        message: "Status change undone",
+        severity: "info",
+      });
+      setLastChangedProject(null);
+    }
+  }, [lastChangedProject, updateProjectStatus]);
+
+  // Effects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        dispatch({ type: "SET_LOADING", payload: true });
+        const data = await projectService.getProjects();
+        dispatch({ type: "SET_PROJECTS", payload: data });
+      } catch (err) {
+        dispatch({ type: "SET_ERROR", payload: "Failed to load projects" });
+        setSnackbarState({
+          open: true,
+          message: "Failed to load projects",
+          severity: "error",
+        });
+      }
+    };
+
+    fetchProjects();
+  }, [dispatch]);
+
+  // Render helpers
+  const renderSkeletons = useCallback(
+    () =>
+      Array(6)
+        .fill(0)
+        .map((_, index) => (
+          <Grid item xs={12} sm={6} md={4} key={`skeleton-${index}`}>
+            <ProjectCardSkeleton />
+          </Grid>
+        )),
+    []
+  );
+
+  const renderProjectGrid = useCallback(
+    (projectsToRender: Project[]) => (
+      <Fade in timeout={500}>
+        <Grid container spacing={3}>
+          {projectsToRender.map((project) => (
+            <Grid
+              item
+              xs={12}
+              sm={viewMode === "list" ? 12 : 6}
+              md={viewMode === "list" ? 12 : 4}
+              key={project.id}
+            >
+              <ProjectCard
+                project={project}
+                onViewDetails={() => handleViewDetails(project)}
+                onEditWorkflow={() => handleEditWorkflow(project)}
+                onStatusChange={(status) =>
+                  handleStatusChange(project.id, status)
+                }
+                isCompact={viewMode === "list"}
+              />
+            </Grid>
+          ))}
+          {loading && renderSkeletons()}
+        </Grid>
+      </Fade>
+    ),
+    [
+      viewMode,
+      loading,
+      handleViewDetails,
+      handleEditWorkflow,
+      handleStatusChange,
+      renderSkeletons,
+    ]
+  );
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Header section */}
       <Box
         sx={{
           display: "flex",
@@ -133,216 +288,196 @@ const Projects: React.FC = () => {
           mb: 4,
         }}
       >
-        <Box>
-          <Typography variant="h4" component="h1" fontWeight="bold">
-            Automation Projects
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Create, manage, and monitor your RPA workflows
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateProject}
-          sx={{ height: 40 }}
-        >
-          Create New Project
-        </Button>
-      </Box>
-
-      <Grid container spacing={3}>
-        {projects.map((project) => (
-          <Grid item xs={12} sm={6} md={4} key={project.id}>
-            <Card
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                transition: "box-shadow 0.3s ease",
-                "&:hover": { boxShadow: 6 },
-              }}
+        <Typography variant="h4" component="h1" fontWeight="bold">
+          Projects
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Tooltip title="Refresh projects">
+            <IconButton onClick={handleRefresh} disabled={loading}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={viewMode === "grid" ? "List view" : "Grid view"}>
+            <IconButton
+              onClick={() =>
+                setViewMode((prev) => (prev === "grid" ? "list" : "grid"))
+              }
+              color="inherit"
             >
-              <CardHeader
-                avatar={
-                  <Avatar
-                    sx={{
-                      bgcolor: `${getDepartmentColor(
-                        project.department
-                      )}.light`,
-                    }}
-                  >
-                    {project.name.charAt(0)}
-                  </Avatar>
-                }
-                action={
-                  <IconButton aria-label="settings">
-                    <MoreIcon />
-                  </IconButton>
-                }
-                title={
-                  <Typography variant="h6" component="div">
-                    {project.name}
-                  </Typography>
-                }
-                subheader={
-                  <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
-                    {getStatusIcon(project.status)}
-                    <Chip
-                      label={project.status}
-                      size="small"
-                      sx={{ ml: 1, textTransform: "capitalize" }}
-                    />
-                  </Box>
-                }
-              />
-
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  {project.description}
-                </Typography>
-
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Chip
-                    label={project.department}
-                    color={getDepartmentColor(project.department)}
-                    size="small"
-                  />
-                  <Box sx={{ textAlign: "right" }}>
-                    <Typography variant="caption" display="block">
-                      {project.automations} automations
-                    </Typography>
-                    <Typography variant="caption" display="block">
-                      Updated: {project.lastUpdated}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-
-              <CardActions sx={{ justifyContent: "space-between", p: 2 }}>
-                <Button
-                  size="small"
-                  startIcon={<ViewIcon />}
-                  onClick={() => handleViewDetails(project)}
-                >
-                  Details
-                </Button>
-                <Button
-                  size="small"
-                  startIcon={<EditIcon />}
-                  onClick={() => handleEditWorkflow(project)}
-                >
-                  Edit
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {projects.length === 0 && (
-        <Box
-          sx={{
-            textAlign: "center",
-            p: 8,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            mt: 4,
-          }}
-        >
-          <Typography variant="h5" gutterBottom>
-            No Automation Projects Yet
-          </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
-            Start streamlining your workflows by creating your first RPA project
-          </Typography>
+              {viewMode === "grid" ? <ListViewIcon /> : <GridViewIcon />}
+            </IconButton>
+          </Tooltip>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreateProject}
-            sx={{ mt: 2 }}
+            aria-label="Create new project"
           >
-            Create First Project
+            New Project
           </Button>
         </Box>
-      )}
+      </Box>
 
-      {/* Project Details Dialog */}
-      <Dialog
-        open={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
+      {/* Projects statistics */}
+      <ProjectStats projects={projects} />
+
+      {/* Tabs navigation */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="project tabs"
+          indicatorColor="primary"
+          textColor="primary"
+        >
+          <Tab label={`All (${projects.length})`} id="project-tab-0" />
+          <Tab label={`Active (${activeProjects.length})`} id="project-tab-1" />
+          <Tab
+            label={`Completed (${completedProjects.length})`}
+            id="project-tab-2"
+          />
+          <Tab label={`Paused (${pausedProjects.length})`} id="project-tab-3" />
+        </Tabs>
+      </Box>
+
+      {/* Filter and sort controls */}
+      <Box
+        sx={{
+          mt: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+        }}
       >
-        {selectedProject && (
-          <>
-            <DialogTitle>{selectedProject.name}</DialogTitle>
-            <DialogContent>
-              <DialogContentText paragraph>
-                {selectedProject.description}
-              </DialogContentText>
+        <ProjectsFilter onFilterChange={setFilters} />
 
-              <Divider sx={{ my: 2 }} />
-
-              <Box
-                sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}
-              >
-                <Typography variant="body2">Status:</Typography>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  {getStatusIcon(selectedProject.status)}
-                  <Typography
-                    variant="body2"
-                    sx={{ ml: 1, textTransform: "capitalize" }}
-                  >
-                    {selectedProject.status}
-                  </Typography>
-                </Box>
-
-                <Typography variant="body2">Department:</Typography>
-                <Chip
-                  label={selectedProject.department}
-                  color={getDepartmentColor(selectedProject.department)}
-                  size="small"
-                />
-
-                <Typography variant="body2">Automations:</Typography>
-                <Typography variant="body2">
-                  {selectedProject.automations}
-                </Typography>
-
-                <Typography variant="body2">Last Updated:</Typography>
-                <Typography variant="body2">
-                  {selectedProject.lastUpdated}
-                </Typography>
-              </Box>
-            </DialogContent>
-
-            <DialogActions>
-              {selectedProject.status !== "completed" && (
-                <Button
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Button
+            size="medium"
+            startIcon={<SortIcon />}
+            onClick={(e) => setSortMenuAnchor(e.currentTarget)}
+            variant="outlined"
+            aria-controls="sort-menu"
+            aria-haspopup="true"
+          >
+            Sort
+          </Button>
+          <Menu
+            id="sort-menu"
+            anchorEl={sortMenuAnchor}
+            open={Boolean(sortMenuAnchor)}
+            onClose={() => setSortMenuAnchor(null)}
+          >
+            {["name", "lastUpdated", "department", "automations"].map(
+              (field) => (
+                <MenuItem
+                  key={field}
                   onClick={() => {
-                    handleStatusChange(selectedProject.id, "completed");
-                    setIsDetailsModalOpen(false);
+                    handleSort(field as keyof Project);
+                    setSortMenuAnchor(null);
                   }}
                 >
-                  Mark as Completed
-                </Button>
-              )}
-              <Button
-                variant="contained"
-                onClick={() => {
-                  handleEditWorkflow(selectedProject);
-                  setIsDetailsModalOpen(false);
-                }}
-              >
-                Edit Workflow
-              </Button>
-            </DialogActions>
-          </>
+                  <ListItemText>
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </ListItemText>
+                </MenuItem>
+              )
+            )}
+          </Menu>
+        </Box>
+      </Box>
+
+      {/* Tab panels */}
+      <TabPanel value={tabValue} index={0}>
+        {loading && !projects.length ? (
+          <Grid container spacing={3}>
+            {renderSkeletons()}
+          </Grid>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        ) : filteredProjects.length === 0 ? (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            No projects match the selected filters
+          </Alert>
+        ) : (
+          renderProjectGrid(filteredProjects)
         )}
-      </Dialog>
+      </TabPanel>
+
+      {/* Other tab panels with similar structure */}
+      {[1, 2, 3].map((index) => (
+        <TabPanel key={index} value={tabValue} index={index}>
+          {loading && !projects.length ? (
+            <Grid container spacing={3}>
+              {renderSkeletons()}
+            </Grid>
+          ) : filteredProjects.length === 0 ? (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              {index === 1
+                ? "No active projects"
+                : index === 2
+                ? "No completed projects"
+                : "No paused projects"}
+            </Alert>
+          ) : (
+            renderProjectGrid(filteredProjects)
+          )}
+        </TabPanel>
+      ))}
+
+      {/* Project details dialog */}
+      {selectedProject && (
+        <ProjectDetailsDialog
+          open={isDetailsModalOpen}
+          project={selectedProject}
+          onClose={() => setIsDetailsModalOpen(false)}
+          onEdit={() => {
+            setIsDetailsModalOpen(false);
+            handleEditWorkflow(selectedProject);
+          }}
+          onStatusChange={(status) => {
+            handleStatusChange(selectedProject.id, status);
+            setIsDetailsModalOpen(false);
+          }}
+        />
+      )}
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarState.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackbarState((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        action={
+          lastChangedProject && (
+            <Button
+              color="secondary"
+              size="small"
+              onClick={handleUndoStatusChange}
+            >
+              UNDO
+            </Button>
+          )
+        }
+      >
+        <Alert
+          onClose={() => setSnackbarState((prev) => ({ ...prev, open: false }))}
+          severity={snackbarState.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarState.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
-export default Projects;
+export const Projects: React.FC = () => (
+  <ProjectProvider>
+    <ProjectsContent />
+  </ProjectProvider>
+);

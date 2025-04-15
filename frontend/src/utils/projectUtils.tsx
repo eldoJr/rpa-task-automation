@@ -5,24 +5,24 @@ import {
   CheckCircle as CompletedIcon,
 } from "@mui/icons-material";
 
-// Icons based on status
-export const getStatusIcon = (
-  status: StatusType,
-  props: Record<string, any> = {}
-) => {
+export const getStatusIcon = (status: StatusType, props: any = {}) => {
+  const iconProps = {
+    fontSize: "small",
+    ...props,
+  };
+
   switch (status) {
     case "active":
-      return <ActiveIcon color="success" {...props} />;
+      return <ActiveIcon color="success" {...iconProps} />;
     case "completed":
-      return <CompletedIcon color="primary" {...props} />;
+      return <CompletedIcon color="primary" {...iconProps} />;
     case "paused":
-      return <PausedIcon color="warning" {...props} />;
+      return <PausedIcon color="warning" {...iconProps} />;
     default:
-      return null;
+      return <ActiveIcon color="inherit" {...iconProps} />;
   }
 };
 
-// Colors based on status
 export const getStatusColor = (status: StatusType): string => {
   switch (status) {
     case "active":
@@ -36,7 +36,6 @@ export const getStatusColor = (status: StatusType): string => {
   }
 };
 
-// Colors based on department
 export const getDepartmentColor = (department: DepartmentType) => {
   const colors: Record<
     DepartmentType,
@@ -50,7 +49,6 @@ export const getDepartmentColor = (department: DepartmentType) => {
   return colors[department];
 };
 
-// Date formatter
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
@@ -60,7 +58,6 @@ export const formatDate = (dateString: string): string => {
   }).format(date);
 };
 
-// Filter logic
 export const filterProjects = (
   projects: Project[],
   filters: {
@@ -96,7 +93,6 @@ export const filterProjects = (
   });
 };
 
-// Sort logic with safe type checks
 export const sortProjects = (
   projects: Project[],
   sortBy: keyof Project,
@@ -115,7 +111,6 @@ export const sortProjects = (
       valueB = new Date(valueB).getTime();
     }
 
-    // Handle undefined values gracefully
     if (valueA == null) return sortOrder === "asc" ? -1 : 1;
     if (valueB == null) return sortOrder === "asc" ? 1 : -1;
 
